@@ -12,6 +12,7 @@ namespace Dummy.Infrastructure
 
         public DbSet<Member> Members { get; set; }
         public DbSet<Location> Locations { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public MainDBContext(DbContextOptions<MainDBContext> options) : base(options) { }
 
@@ -40,7 +41,7 @@ namespace Dummy.Infrastructure
 
                 if (entry.State == EntityState.Added)
                 {
-                    entity.CreatedDate = DateTime.Now;
+                    entity.CreatedDate = DateTime.UtcNow;
                 }
                 else
                 {

@@ -1,5 +1,5 @@
 ﻿
-using Dummy.Infrastructure.Exceptions;
+using Dummy.Infrastructure.Commons.Base;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

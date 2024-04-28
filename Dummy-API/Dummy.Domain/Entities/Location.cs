@@ -7,5 +7,8 @@ namespace Dummy.Domain.Entities
         public String Address { get; set; }
         public String District { get; set; }
         public String City { get; set; }
+
+        public Member Member { get; set; }
+        public Guid MemberId { get; set; }
     }
 }

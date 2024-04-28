@@ -1,3 +1,4 @@
+using Dummy.Infrastructure.Extensions;
 using Dummy.Infrastructure.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,13 +10,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Middlewares
-builder.Services.AddExceptionHandler<RestfulAPIExceptionHandler>();
+
+// DI
+builder.Services.AuthConfiguration(builder.Configuration)
+                .DatabaseConfiguration(builder.Configuration)
+                .AddExceptionHandler<RestfulAPIExceptionHandler>()
+                .ServicesConfiguration()
+                .RedisConfiguration(builder.Configuration)
+                .MediatRConfiguration();
+
+
 
 var app = builder.Build();
 
-// Global RestfulAPI Exception Handler
-app.UseExceptionHandler(opt => { });
+// Middlewares
+app.UseExceptionHandler(opt => { }); // Global Exception Handler
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -26,6 +35,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Authentication - Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
