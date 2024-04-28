@@ -1,2 +1,5 @@
 # cms-system-be-C-.NET
-A dummy API build by .NET 8.0 
+An API with authentication and authorization mechanism to serve for the final course front end build by using C# Web API .NET 8.0
+* EFCore
+* Jwt Bearer
+* Redis Cache
