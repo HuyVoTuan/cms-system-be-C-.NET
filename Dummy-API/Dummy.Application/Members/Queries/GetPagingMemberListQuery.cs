@@ -41,10 +41,15 @@ namespace Dummy.Application.Members.Queries
                                               })
                                               .OrderByDescending(x => x.CreatedDate);
 
+            // Calculate item length
             var totalMembers = await query.CountAsync(cancellationToken);
 
+            // Perform pagination on item length with request page index and page limit
             var pagedMembers = await query.Page(request.PageIndex, request.PageLimit)
                                           .ToListAsync(cancellationToken);
+
+            // Calculate total pages
+            var totalPages = Math.Ceiling((double)totalMembers / request.PageLimit);
 
             return new BaseResponseDTO<PagingResponseDTO<MemberDTO>>
             {
@@ -54,7 +59,8 @@ namespace Dummy.Application.Members.Queries
                 {
                     PageIndex = request.PageIndex,
                     PageLimit = request.PageLimit,
-                    Total = totalMembers,
+                    ItemLength = totalMembers,
+                    TotalPages = (int)totalPages,
                     Data = pagedMembers
                 }
             };
