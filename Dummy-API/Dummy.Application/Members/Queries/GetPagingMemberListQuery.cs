@@ -43,7 +43,7 @@ namespace Dummy.Application.Members.Queries
 
             var totalMembers = await query.CountAsync(cancellationToken);
 
-            var pagedMembers = await query.Page(request.PageIndex, request.PageLimit)                                         
+            var pagedMembers = await query.Page(request.PageIndex, request.PageLimit)
                                           .ToListAsync(cancellationToken);
 
             return new BaseResponseDTO<PagingResponseDTO<MemberDTO>>

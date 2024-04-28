@@ -8,7 +8,7 @@ using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
-    public class RefreshTokenMemberCommandDTO() 
+    public class RefreshTokenMemberCommandDTO()
     {
         public string RefreshToken { get; init; }
     }
