@@ -6,6 +6,7 @@ using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using System.Net;
 
@@ -35,7 +36,7 @@ namespace Dummy.Application.Members.Commands
             _mainDBContext = mainDBContext;
 
 
-            RuleFor(x => x.FirstName).NotEmpty()
+            RuleFor(x => x.FirstName).NotEmpty()                                  
                                      .OverridePropertyName(_localizer["Firstname"])
                                      .WithMessage(_localizer["Firstname can not be empty!"]);
 
