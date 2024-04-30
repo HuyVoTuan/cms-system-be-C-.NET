@@ -80,6 +80,7 @@ namespace Dummy.Infrastructure.Services
                     {
                         AbsoluteExpiration = timeOffset,
                     });
+                    _logger.LogInformation($"Successfully set data for key: {key}");
 
                     return true;
                 }

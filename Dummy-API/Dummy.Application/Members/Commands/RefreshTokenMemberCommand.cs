@@ -3,6 +3,7 @@ using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Services;
 using Dummy.Infrastructure.Services.Auth;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -18,6 +19,22 @@ namespace Dummy.Application.Members.Commands
         public String Slug { get; init; }
         public string RefreshToken { get; init; }
     }
+
+    // Command validation
+    public class RefreshTokenMemberCommandValidator : AbstractValidator<RefreshTokenMemberCommand>
+    {
+        public RefreshTokenMemberCommandValidator()
+        {
+            RuleFor(x => x.Slug).NotEmpty()
+                                .OverridePropertyName("slug")
+                                .WithMessage("Slug can not be empty!");
+
+            RuleFor(x => x.RefreshToken).NotEmpty()
+                                        .OverridePropertyName("refreshToken")
+                                        .WithMessage("Refresh token can not be empty!");
+        }
+    }
+
     internal class RefreshTokenMemberCommandHandler : IRequestWithBaseResponseHandler<RefreshTokenMemberCommand, AuthResponseDTO>
     {
         private readonly MainDBContext _mainDBContext;

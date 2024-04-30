@@ -2,6 +2,7 @@
 using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Services.Auth;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -13,6 +14,27 @@ namespace Dummy.Application.Members.Commands
         public String Password { get; init; }
 
     }
+
+    // Command validation
+    public class LoginMemberCommandValidator : AbstractValidator<LoginMemberCommand>
+    {
+        private readonly MainDBContext _mainDBContext;
+
+        public LoginMemberCommandValidator(MainDBContext mainDBContext)
+        {
+            _mainDBContext = mainDBContext;
+
+
+            RuleFor(x => x.Email).NotEmpty()
+                                 .OverridePropertyName("email")
+                                 .WithMessage("Email can not be empty!");
+
+            RuleFor(x => x.Password).NotEmpty()
+                                    .OverridePropertyName("password")
+                                    .WithMessage("Password can not be empty!");
+        }
+    }
+
     internal class LoginMemberCommandHandler : IRequestWithBaseResponseHandler<LoginMemberCommand, AuthResponseDTO>
     {
         private readonly MainDBContext _mainDBContext;

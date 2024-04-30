@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Dummy.Infrastructure.Behaviors;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dummy.Infrastructure.Extensions
 {
@@ -9,6 +11,10 @@ namespace Dummy.Infrastructure.Extensions
             var executingAssembly = AppDomain.CurrentDomain.Load("Dummy.Application");
             services.AddMediatR(cfg =>
                      cfg.RegisterServicesFromAssemblies(executingAssembly));
+
+            // MediatR Pipelines
+            services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
 
             return services;
         }

@@ -5,7 +5,8 @@ using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
@@ -15,11 +16,58 @@ namespace Dummy.Application.Members.Commands
         public String Avatar { get; init; }
         public String FirstName { get; init; }
         public String LastName { get; init; }
-        public String Password { get; set; }
+        public String Password { get; init; }
         public String Email { get; init; }
         public String Address { get; init; }
         public String District { get; init; }
         public String City { get; init; }
+    }
+
+    // Command validation
+    public class RegisterMemberCommandValidator : AbstractValidator<RegisterMemberCommand>
+    {
+        private readonly MainDBContext _mainDBContext;
+        private readonly IStringLocalizer<RegisterMemberCommandValidator> _localizer;
+
+        public RegisterMemberCommandValidator(MainDBContext mainDBContext, IStringLocalizer<RegisterMemberCommandValidator> localizer)
+        {
+            _localizer = localizer;
+            _mainDBContext = mainDBContext;
+
+
+            RuleFor(x => x.FirstName).NotEmpty()
+                                     .OverridePropertyName(_localizer["Firstname"])
+                                     .WithMessage(_localizer["Firstname can not be empty!"]);
+
+            RuleFor(x => x.LastName).NotEmpty()
+                                    .OverridePropertyName("Lastname")
+                                    .WithMessage(_localizer["Lastname can not be empty!"]);
+
+            RuleFor(x => x.Email).Must(email =>
+                                 {
+                                     var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
+                                     return !isExisted;
+                                 })
+                                .OverridePropertyName("Email")
+                                .WithMessage("Email has been taken!");
+
+            RuleFor(x => x.Password).NotEmpty()
+                                    .MinimumLength(6)
+                                    .OverridePropertyName("password")
+                                    .WithMessage("Password can not be empty or less than 6 characters!");
+
+            RuleFor(x => x.Address).NotEmpty()
+                                    .OverridePropertyName("address")
+                                    .WithMessage("Address can not be empty!");
+
+            RuleFor(x => x.District).NotEmpty()
+                                    .OverridePropertyName("district")
+                                    .WithMessage("District can not be empty!");
+
+            RuleFor(x => x.City).NotEmpty()
+                                .OverridePropertyName("city")
+                                .WithMessage("City can not be empty!");
+        }
     }
 
     internal class RegisterMemberCommandHandler : IRequestWithBaseResponseHandler<RegisterMemberCommand, AuthResponseDTO>
@@ -34,12 +82,11 @@ namespace Dummy.Application.Members.Commands
         }
         public async Task<BaseResponseDTO<AuthResponseDTO>> Handle(RegisterMemberCommand request, CancellationToken cancellationToken)
         {
-            var isMemeberExist = await _mainDBContext.Members.AsNoTracking()
-                                                             .AnyAsync(x => x.Email == request.Email);
+            var isAdmin = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}").Contains("admin");
 
-            if (isMemeberExist)
+            if (isAdmin)
             {
-                throw new RestfulAPIException(HttpStatusCode.Found, $"User with {request.Email} is already exists!");
+                throw new RestfulAPIException(HttpStatusCode.BadRequest, "Invalid username, please choose another username!");
             }
 
             var newMember = new Member
@@ -84,7 +131,7 @@ namespace Dummy.Application.Members.Commands
             return new BaseResponseDTO<AuthResponseDTO>
             {
                 Code = HttpStatusCode.Created,
-                Message = $"Successfully register {request.Email} user",
+                Message = $"Successfully register {newMember.Slug} user",
                 Data = authResponseDTO
             };
         }

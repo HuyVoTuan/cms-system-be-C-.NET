@@ -2,12 +2,24 @@
 using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Services.Auth;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
     public record RevokeMemberRefreshTokenCommand(String Slug) : IRequestWithBaseResponse;
+
+    // Command validation
+    public class RevokeMemberRefreshTokenCommandValidator : AbstractValidator<RevokeMemberRefreshTokenCommand>
+    {
+        public RevokeMemberRefreshTokenCommandValidator()
+        {
+            RuleFor(x => x.Slug).NotEmpty()
+                                .OverridePropertyName("slug")
+                                .WithMessage("Slug can not be empty!");
+        }
+    }
     internal class RevokeMemberRefreshTokenCommandHandler : IRequestWithBaseResponseHandler<RevokeMemberRefreshTokenCommand>
     {
         private readonly MainDBContext _mainDBContext;

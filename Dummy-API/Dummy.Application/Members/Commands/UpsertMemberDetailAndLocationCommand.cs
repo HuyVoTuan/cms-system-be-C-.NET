@@ -6,12 +6,12 @@ using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
-
     public class UpsertMemberDetailAndLocationCommand : IRequestWithBaseResponse<MemberDTO>
     {
         public String Slug { get; init; }
@@ -23,6 +23,43 @@ namespace Dummy.Application.Members.Commands
         public String Address { get; init; }
         public String District { get; init; }
         public String City { get; init; }
+    }
+
+    public class UpsertMemberDetailAndLocationCommandValidator : AbstractValidator<UpsertMemberDetailAndLocationCommand>
+    {
+        private readonly MainDBContext _mainDBContext;
+        public UpsertMemberDetailAndLocationCommandValidator(MainDBContext mainDBContext)
+        {
+            _mainDBContext = mainDBContext;
+
+            RuleFor(x => x.FirstName).NotEmpty()
+                                     .OverridePropertyName("firstname")
+                                     .WithMessage("Firstname can not be empty!");
+
+            RuleFor(x => x.LastName).NotEmpty()
+                                    .OverridePropertyName("lastname")
+                                    .WithMessage("Lastname can not be empty!");
+
+            RuleFor(x => x.Email).Must(email =>
+                                 {
+                                     var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
+                                     return !isExisted;
+                                 })
+                                .OverridePropertyName("email")
+                                .WithMessage("Email has been taken!");
+
+            RuleFor(x => x.Address).NotEmpty()
+                                    .OverridePropertyName("address")
+                                    .WithMessage("Address can not be empty!");
+
+            RuleFor(x => x.District).NotEmpty()
+                                    .OverridePropertyName("district")
+                                    .WithMessage("District can not be empty!");
+
+            RuleFor(x => x.City).NotEmpty()
+                                .OverridePropertyName("city")
+                                .WithMessage("City can not be empty!");
+        }
     }
     internal class UpsertMemberDetailAndLocationCommandHandler : IRequestWithBaseResponseHandler<UpsertMemberDetailAndLocationCommand, MemberDTO>
     {
@@ -36,6 +73,7 @@ namespace Dummy.Application.Members.Commands
         }
         public async Task<BaseResponseDTO<MemberDTO>> Handle(UpsertMemberDetailAndLocationCommand request, CancellationToken cancellationToken)
         {
+            var isAdmin = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}").Contains("admin");
             var existingMember = await _mainDBContext.Members.Include(x => x.Locations)
                                                              .FirstOrDefaultAsync(x => x.Slug == request.Slug
                                                                                   && x.Id == _currentUserService.Id, cancellationToken);
@@ -43,6 +81,11 @@ namespace Dummy.Application.Members.Commands
             if (existingMember is null)
             {
                 throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} member does not exists!");
+            }
+
+            if (isAdmin)
+            {
+                throw new RestfulAPIException(HttpStatusCode.BadRequest, "Invalid username, please choose another username!");
             }
 
             existingMember.Slug = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}");
@@ -103,7 +146,7 @@ namespace Dummy.Application.Members.Commands
             return new BaseResponseDTO<MemberDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = $"Successfully update {request.Email} user",
+                Message = $"Successfully update {existingMember.Slug} user",
                 Data = memberDTO
             };
         }
