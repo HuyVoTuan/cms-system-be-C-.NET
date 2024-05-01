@@ -5,6 +5,16 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <None Remove="Localization\Resources\en-US.json" />
+	  <None Remove="Localization\Resources\vi-VN.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Localization\Resources\en-US.json" />
+	  <EmbeddedResource Include="Localization\Resources\vi-VN.json" />
+	</ItemGroup>
+
 	
 	<ItemGroup>
 		<PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />

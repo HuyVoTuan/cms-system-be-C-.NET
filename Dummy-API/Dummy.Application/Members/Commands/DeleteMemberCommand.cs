@@ -3,6 +3,7 @@ using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
@@ -12,11 +13,15 @@ namespace Dummy.Application.Members.Commands
     // Command validation
     public class DeleteMemberCommandValidator : AbstractValidator<DeleteMemberCommand>
     {
-        public DeleteMemberCommandValidator()
+        private readonly IStringLocalizer _localizer;
+
+        public DeleteMemberCommandValidator(IStringLocalizer localizer)
         {
+            _localizer = localizer;
+
             RuleFor(x => x.Slug).NotEmpty()
-                                .OverridePropertyName("slug")
-                                .WithMessage("Slug can not be empty!");
+                                .OverridePropertyName(_localizer["slug"])
+                                .WithMessage(_localizer["cant_be_empty"]);
         }
     }
     internal class DeleteMemberCommandHandler : IRequestWithBaseResponseHandler<DeleteMemberCommand>

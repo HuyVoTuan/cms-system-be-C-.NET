@@ -1,0 +1,21 @@
+﻿{
+  "slug": "slug",
+  "firstname": "firstname",
+  "lastname": "lastname",
+  "email": "email",
+  "password": {
+    "password": "password",
+    "min_6_length": "must be more than 6 characters"
+  },
+  "address": "address",
+  "district": "district",
+  "city": "city",
+  "refresh_token": "refresh token",
+  "paging": {
+    "page_index": "page index",
+    "page_limit": "page limit"
+  },
+  "cant_be_empty": "can not be empty",
+  "already_exists": "already exists",
+  "invalid": "invalid"
+}

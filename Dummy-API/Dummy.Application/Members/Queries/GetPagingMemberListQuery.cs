@@ -4,13 +4,40 @@ using Dummy.Infrastructure;
 using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.LINQ;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dummy.Application.Members.Queries
 {
 
     public class GetPagingMemberListQuery() : PagingRequestDTO, IRequestWithBaseResponse<PagingResponseDTO<MemberDTO>>;
+
+    // Command validation
+    public class GetPagingMemberListQueryValidator : AbstractValidator<GetPagingMemberListQuery>
+    {
+        private readonly IStringLocalizer _localizer;
+
+
+        public GetPagingMemberListQueryValidator(IStringLocalizer localizer)
+        {
+            _localizer = localizer;
+
+            RuleFor(x => x.PageIndex).Must(x => int.TryParse(x, out var result) && result > 0)
+                                     .OverridePropertyName(_localizer["paging.page_index"])
+                                     .WithMessage(_localizer["invalid"]);
+
+            RuleFor(x => x.PageLimit).Must(x => int.TryParse(x, out var result) && result > 0)
+                                     .OverridePropertyName(_localizer["paging.page_limit"])
+                                     .WithMessage(_localizer["invalid"]);
+        }
+    }
+
     internal class GetPagingMemberListQuerytHandler : IRequestWithBaseResponseHandler<GetPagingMemberListQuery, PagingResponseDTO<MemberDTO>>
     {
         private readonly MainDBContext _mainDBContext;
@@ -44,12 +71,16 @@ namespace Dummy.Application.Members.Queries
             // Calculate item length
             var totalMembers = await query.CountAsync(cancellationToken);
 
+            // Convert string paging request fields to integer
+            int.TryParse(request.PageIndex, out var pageIndex);
+            int.TryParse(request.PageLimit, out var pageLimit);
+
             // Perform pagination on item length with request page index and page limit
-            var pagedMembers = await query.Page(request.PageIndex, request.PageLimit)
+            var pagedMembers = await query.Page(pageIndex, pageLimit)
                                           .ToListAsync(cancellationToken);
 
             // Calculate total pages
-            var totalPages = Math.Ceiling((double)totalMembers / request.PageLimit);
+            var totalPages = Math.Ceiling((double)totalMembers / pageLimit);
 
             return new BaseResponseDTO<PagingResponseDTO<MemberDTO>>
             {
@@ -57,8 +88,8 @@ namespace Dummy.Application.Members.Queries
                 Message = "Successfully get all memebers",
                 Data = new PagingResponseDTO<MemberDTO>
                 {
-                    PageIndex = request.PageIndex,
-                    PageLimit = request.PageLimit,
+                    PageIndex = pageIndex,
+                    PageLimit = pageLimit,
                     ItemLength = totalMembers,
                     TotalPages = (int)totalPages,
                     Data = pagedMembers

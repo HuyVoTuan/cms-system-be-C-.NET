@@ -2,7 +2,7 @@
 {
     public class PagingRequestDTO
     {
-        public int PageIndex { get; set; } = 1;
-        public int PageLimit { get; set; } = 5;
+        public string PageIndex { get; set; } = "1";
+        public string PageLimit { get; set; } = "5";
     }
 }

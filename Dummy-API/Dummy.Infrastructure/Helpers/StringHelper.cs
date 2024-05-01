@@ -1,7 +1,14 @@
-﻿namespace Dummy.Infrastructure.Helpers
+﻿using System.Text.RegularExpressions;
+
+namespace Dummy.Infrastructure.Helpers
 {
     public static class StringHelper
     {
+        public static bool IsDecimalAsString(this string value)
+        {
+            var r = new Regex(@"\d+\.\d+");
+            return r.IsMatch(value);
+        }
         public static string GenerateSlug(string memberName)
         {
             var slug = memberName.Replace(" ", "-");

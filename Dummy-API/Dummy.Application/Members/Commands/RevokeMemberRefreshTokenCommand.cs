@@ -4,6 +4,7 @@ using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
@@ -13,11 +14,15 @@ namespace Dummy.Application.Members.Commands
     // Command validation
     public class RevokeMemberRefreshTokenCommandValidator : AbstractValidator<RevokeMemberRefreshTokenCommand>
     {
-        public RevokeMemberRefreshTokenCommandValidator()
+        private readonly IStringLocalizer _localizer;
+
+        public RevokeMemberRefreshTokenCommandValidator(IStringLocalizer localizer)
         {
+            _localizer = localizer;
+
             RuleFor(x => x.Slug).NotEmpty()
-                                .OverridePropertyName("slug")
-                                .WithMessage("Slug can not be empty!");
+                                .OverridePropertyName(_localizer["slug"])
+                                .WithMessage(_localizer["cant_be_empty"]);
         }
     }
     internal class RevokeMemberRefreshTokenCommandHandler : IRequestWithBaseResponseHandler<RevokeMemberRefreshTokenCommand>

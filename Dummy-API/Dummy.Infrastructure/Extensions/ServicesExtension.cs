@@ -12,7 +12,7 @@ namespace Dummy.Infrastructure.Extensions
             {
                 builder.AddConsole();
             });
-            services.AddLocalization();
+            services.AddMemoryCache();
             services.AddScoped<ICacheService, CacheService>();
             return services;
         }

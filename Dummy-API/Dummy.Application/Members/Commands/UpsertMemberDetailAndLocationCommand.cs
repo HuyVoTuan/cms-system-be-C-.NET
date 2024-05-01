@@ -8,6 +8,7 @@ using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
@@ -27,38 +28,44 @@ namespace Dummy.Application.Members.Commands
 
     public class UpsertMemberDetailAndLocationCommandValidator : AbstractValidator<UpsertMemberDetailAndLocationCommand>
     {
+        private readonly IStringLocalizer _localizer;
         private readonly MainDBContext _mainDBContext;
-        public UpsertMemberDetailAndLocationCommandValidator(MainDBContext mainDBContext)
+
+        public UpsertMemberDetailAndLocationCommandValidator(MainDBContext mainDBContext, IStringLocalizer localizer)
         {
+            _localizer = localizer;
             _mainDBContext = mainDBContext;
 
             RuleFor(x => x.FirstName).NotEmpty()
-                                     .OverridePropertyName("firstname")
-                                     .WithMessage("Firstname can not be empty!");
+                                     .OverridePropertyName(_localizer["firstname"])
+                                     .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.LastName).NotEmpty()
-                                    .OverridePropertyName("lastname")
-                                    .WithMessage("Lastname can not be empty!");
+                                    .OverridePropertyName(_localizer["lastname"])
+                                    .WithMessage(_localizer["cant_be_empty"]);
 
-            RuleFor(x => x.Email).Must(email =>
-                                 {
-                                     var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
-                                     return !isExisted;
-                                 })
-                                .OverridePropertyName("email")
-                                .WithMessage("Email has been taken!");
+            RuleFor(x => x.Email).NotEmpty()
+                                  .OverridePropertyName(_localizer["email"])
+                                  .WithMessage(_localizer["cant_be_empty"])
+                                  .Must(email =>
+                                  {
+                                      var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
+                                      return !isExisted;
+                                  })
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["already_exists"]);
 
             RuleFor(x => x.Address).NotEmpty()
-                                    .OverridePropertyName("address")
-                                    .WithMessage("Address can not be empty!");
+                                   .OverridePropertyName(_localizer["address"])
+                                   .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.District).NotEmpty()
-                                    .OverridePropertyName("district")
-                                    .WithMessage("District can not be empty!");
+                                    .OverridePropertyName(_localizer["district"])
+                                    .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.City).NotEmpty()
-                                .OverridePropertyName("city")
-                                .WithMessage("City can not be empty!");
+                                .OverridePropertyName(_localizer["city"])
+                                .WithMessage(_localizer["cant_be_empty"]);
         }
     }
     internal class UpsertMemberDetailAndLocationCommandHandler : IRequestWithBaseResponseHandler<UpsertMemberDetailAndLocationCommand, MemberDTO>

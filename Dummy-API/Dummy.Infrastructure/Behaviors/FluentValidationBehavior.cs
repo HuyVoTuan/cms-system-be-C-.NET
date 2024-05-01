@@ -1,12 +1,7 @@
 ﻿using Dummy.Infrastructure.Commons.Base;
 using FluentValidation;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dummy.Infrastructure.Behaviors
 {
@@ -28,7 +23,7 @@ namespace Dummy.Infrastructure.Behaviors
                                             .Where(failure => failure != null)
                                             .GroupBy(message => message.PropertyName)
                                             .ToList()
-                                            .ToDictionary(message => message.Key, message => message.Select(content => content.ErrorMessage));
+                                            .ToDictionary(message => message.Key, message => message.Select(content => content.ErrorMessage.Replace("'", "")));
 
             if (failures.Any())
             {

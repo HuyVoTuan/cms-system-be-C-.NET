@@ -1,8 +1,5 @@
 using Dummy.Infrastructure.Extensions;
 using Dummy.Infrastructure.Middlewares;
-using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Options;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,15 +17,16 @@ builder.Services.AuthConfiguration(builder.Configuration)
                 .AddExceptionHandler<RestfulAPIExceptionHandler>()
                 .ServicesConfiguration()
                 .RedisConfiguration(builder.Configuration)
+                .LocalizationConfiguration(builder.Configuration)
                 .FluentValidationConfiguration()
                 .MediatRConfiguration();
-
 
 
 var app = builder.Build();
 
 // Middlewares
 app.UseExceptionHandler(opt => { }); // Global Exception Handler
+app.UseMiddleware<LocalizationMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

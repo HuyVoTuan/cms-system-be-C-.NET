@@ -5,6 +5,7 @@ using Dummy.Infrastructure.Services;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
@@ -23,15 +24,19 @@ namespace Dummy.Application.Members.Commands
     // Command validation
     public class RefreshTokenMemberCommandValidator : AbstractValidator<RefreshTokenMemberCommand>
     {
-        public RefreshTokenMemberCommandValidator()
+        private readonly IStringLocalizer _localizer;
+
+        public RefreshTokenMemberCommandValidator(IStringLocalizer localizer)
         {
+            _localizer = localizer;
+
             RuleFor(x => x.Slug).NotEmpty()
-                                .OverridePropertyName("slug")
-                                .WithMessage("Slug can not be empty!");
+                                .OverridePropertyName(_localizer["slug"])
+                                .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.RefreshToken).NotEmpty()
-                                        .OverridePropertyName("refreshToken")
-                                        .WithMessage("Refresh token can not be empty!");
+                                        .OverridePropertyName(_localizer["refresh_token"])
+                                        .WithMessage(_localizer["cant_be_empty"]);
         }
     }
 
@@ -47,10 +52,10 @@ namespace Dummy.Application.Members.Commands
                                                 ICurrentUserService currentUserService,
                                                 ICacheService cacheService)
         {
-            _mainDBContext = mainDBContext;
             _authService = authService;
-            _currentUserService = currentUserService;
             _cacheService = cacheService;
+            _mainDBContext = mainDBContext;
+            _currentUserService = currentUserService;
         }
         public async Task<BaseResponseDTO<AuthResponseDTO>> Handle(RefreshTokenMemberCommand request, CancellationToken cancellationToken)
         {

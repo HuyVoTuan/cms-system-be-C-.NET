@@ -5,11 +5,11 @@ using System.Diagnostics;
 
 namespace Dummy.Infrastructure.Behaviors
 {
-    internal class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    internal class MediatRLoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
-        private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
+        private readonly ILogger<MediatRLoggingBehavior<TRequest, TResponse>> _logger;
 
-        public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
+        public MediatRLoggingBehavior(ILogger<MediatRLoggingBehavior<TRequest, TResponse>> logger)
         {
             _logger = logger;
         }

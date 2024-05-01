@@ -4,6 +4,7 @@ using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
@@ -18,20 +19,21 @@ namespace Dummy.Application.Members.Commands
     // Command validation
     public class LoginMemberCommandValidator : AbstractValidator<LoginMemberCommand>
     {
+        private readonly IStringLocalizer _localizer;
         private readonly MainDBContext _mainDBContext;
 
-        public LoginMemberCommandValidator(MainDBContext mainDBContext)
+        public LoginMemberCommandValidator(MainDBContext mainDBContext, IStringLocalizer localizer)
         {
+            _localizer = localizer;
             _mainDBContext = mainDBContext;
 
-
             RuleFor(x => x.Email).NotEmpty()
-                                 .OverridePropertyName("email")
-                                 .WithMessage("Email can not be empty!");
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.Password).NotEmpty()
-                                    .OverridePropertyName("password")
-                                    .WithMessage("Password can not be empty!");
+                                    .OverridePropertyName(_localizer["password"])
+                                    .WithMessage(_localizer["cant_be_empty"]);
         }
     }
 

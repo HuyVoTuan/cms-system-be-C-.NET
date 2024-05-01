@@ -6,7 +6,6 @@ using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using System.Net;
 
@@ -35,39 +34,43 @@ namespace Dummy.Application.Members.Commands
             _localizer = localizer;
             _mainDBContext = mainDBContext;
 
-
-            RuleFor(x => x.FirstName).NotEmpty()                                  
-                                     .OverridePropertyName(_localizer["Firstname"])
-                                     .WithMessage(_localizer["Firstname can not be empty!"]);
+            RuleFor(x => x.FirstName).NotEmpty()
+                                     .OverridePropertyName(_localizer["firstname"])
+                                     .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.LastName).NotEmpty()
-                                    .OverridePropertyName("Lastname")
-                                    .WithMessage(_localizer["Lastname can not be empty!"]);
+                                    .OverridePropertyName(_localizer["lastname"])
+                                    .WithMessage(_localizer["cant_be_empty"]);
 
-            RuleFor(x => x.Email).Must(email =>
+            RuleFor(x => x.Email).NotEmpty()
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["cant_be_empty"])
+                                 .Must(email =>
                                  {
                                      var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
                                      return !isExisted;
                                  })
-                                .OverridePropertyName("Email")
-                                .WithMessage("Email has been taken!");
+                                .OverridePropertyName(_localizer["email"])
+                                .WithMessage(_localizer["already_exists"]);
 
             RuleFor(x => x.Password).NotEmpty()
+                                    .OverridePropertyName(_localizer["password.password"])
+                                    .WithMessage(_localizer["cant_be_empty"])
                                     .MinimumLength(6)
-                                    .OverridePropertyName("password")
-                                    .WithMessage("Password can not be empty or less than 6 characters!");
+                                    .OverridePropertyName(_localizer["password.password"])
+                                    .WithMessage(_localizer["password.min_6_length"]);
 
             RuleFor(x => x.Address).NotEmpty()
-                                    .OverridePropertyName("address")
-                                    .WithMessage("Address can not be empty!");
+                                   .OverridePropertyName(_localizer["address"])
+                                   .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.District).NotEmpty()
-                                    .OverridePropertyName("district")
-                                    .WithMessage("District can not be empty!");
+                                    .OverridePropertyName(_localizer["district"])
+                                    .WithMessage(_localizer["cant_be_empty"]);
 
             RuleFor(x => x.City).NotEmpty()
-                                .OverridePropertyName("city")
-                                .WithMessage("City can not be empty!");
+                                .OverridePropertyName(_localizer["city"])
+                                .WithMessage(_localizer["cant_be_empty"]);
         }
     }
 

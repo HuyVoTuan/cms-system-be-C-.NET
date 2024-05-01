@@ -13,7 +13,7 @@ namespace Dummy.Infrastructure.Extensions
                      cfg.RegisterServicesFromAssemblies(executingAssembly));
 
             // MediatR Pipelines
-            services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(MediatRLoggingBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
 
             return services;
