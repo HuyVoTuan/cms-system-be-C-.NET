@@ -12,8 +12,6 @@ namespace Dummy.Infrastructure.Extensions
         public static IServiceCollection LocalizationConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddLocalization();
-            services.AddScoped<IStringLocalizer, JsonStringLocalizer>();
-            services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
 
             var jsonLocalizationOptions = configuration.GetSection(nameof(JsonLocalizationOptions)).Get<JsonLocalizationOptions>();
             var supportedCultureInfos = jsonLocalizationOptions.SupportedCultureInfos.ToList();
@@ -23,6 +21,9 @@ namespace Dummy.Infrastructure.Extensions
                 opt.SetDefaultCulture(jsonLocalizationOptions.DefaultCulture);
                 opt.SupportedCultures = supportedCultureInfos.Select(x => new CultureInfo(x)).ToList();
             });
+
+            services.AddScoped<IStringLocalizer, JsonStringLocalizer>();
+            services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
             return services;
         }
     }

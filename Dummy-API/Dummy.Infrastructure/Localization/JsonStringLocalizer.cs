@@ -69,7 +69,7 @@ namespace Dummy.Infrastructure.Localization
             {
                 if (resourceStream != null)
                 {
-                    using (var streamReader = new StreamReader(resourceStream))
+                    using (StreamReader streamReader = new StreamReader(resourceStream))
                     {
                         using (var jsonDocument = JsonDocument.Parse(streamReader.ReadToEnd()))
                         {

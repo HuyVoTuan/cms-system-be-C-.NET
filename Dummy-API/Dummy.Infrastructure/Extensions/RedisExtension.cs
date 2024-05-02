@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Dummy.Infrastructure.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -25,6 +26,8 @@ namespace Dummy.Infrastructure.Extensions
                 options.ConfigurationOptions = configurationOptions;
                 options.InstanceName = configuration["Redis:InstanceName"];
             });
+
+            services.AddScoped<ICacheService, CacheService>();
             return services;
         }
     }
