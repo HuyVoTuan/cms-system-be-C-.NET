@@ -14,7 +14,7 @@ namespace Dummy.Infrastructure.Extensions
 
             // MediatR Pipelines
             services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(MediatRLoggingBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
 
             return services;
         }

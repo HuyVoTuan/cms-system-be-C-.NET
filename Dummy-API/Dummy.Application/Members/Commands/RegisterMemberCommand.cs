@@ -5,6 +5,7 @@ using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
+using Dummy.Infrastructure.Services.EmailService;
 using FluentValidation;
 using Microsoft.Extensions.Localization;
 using System.Net;
@@ -42,7 +43,10 @@ namespace Dummy.Application.Members.Commands
                                     .OverridePropertyName(_localizer["lastname"])
                                     .WithMessage(_localizer["cant_be_empty"]);
 
-            RuleFor(x => x.Email).NotEmpty()
+            RuleFor(x => x.Email).EmailAddress()
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["invalid"])
+                                 .NotEmpty()
                                  .OverridePropertyName(_localizer["email"])
                                  .WithMessage(_localizer["cant_be_empty"])
                                  .Must(email =>
@@ -78,11 +82,13 @@ namespace Dummy.Application.Members.Commands
     {
         private readonly MainDBContext _mainDBContext;
         private readonly IAuthService _authService;
+        private readonly IEmailNotificationService _emailNotificationService;
 
-        public RegisterMemberCommandHandler(MainDBContext mainDBContext, IAuthService authService)
+        public RegisterMemberCommandHandler(MainDBContext mainDBContext, IAuthService authService, IEmailNotificationService emailNotificationService)
         {
             _mainDBContext = mainDBContext;
             _authService = authService;
+            _emailNotificationService = emailNotificationService;
         }
         public async Task<BaseResponseDTO<AuthResponseDTO>> Handle(RegisterMemberCommand request, CancellationToken cancellationToken)
         {
@@ -119,6 +125,8 @@ namespace Dummy.Application.Members.Commands
             // Initial save to database
             await _mainDBContext.SaveChangesAsync(cancellationToken);
 
+
+
             var refreshToken = _authService.GenerateRefreshToken(newMember);
             await _mainDBContext.RefreshTokens.AddAsync(refreshToken, cancellationToken);
 
@@ -131,6 +139,8 @@ namespace Dummy.Application.Members.Commands
                 AccessToken = _authService.GenerateToken(newMember),
                 RefreshToken = refreshToken.Token
             };
+
+            await _emailNotificationService.SendEmailAsync("huy.vt00578@sinhvien.hoasen.edu.vn", new {Username = newMember.Slug }, "register");
 
             return new BaseResponseDTO<AuthResponseDTO>
             {

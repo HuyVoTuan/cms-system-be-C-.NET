@@ -1,14 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<email>
-	<subject subject="">Welcome to Our Community!</subject>
-	<body>
+<mailTemplates>
+	<subject subject="register">Register Successfully</subject>
+	<body id="register">
 		<header>
 			<h1>Welcome to Our Community!</h1>
 		</header>
-		<content id="">
-			<p>Dear [UserName],</p>
+		<content>
+			<p>Dear {{ Username }},</p>
 			<p>We are thrilled to welcome you to our community! You have successfully registered an account with us.</p>
-			<p>Your username: [UserEmail]</p>
 			<p>Thank you for joining us. We can't wait for you to explore all that our community has to offer.</p>
 			<p>Should you have any questions or need assistance, feel free to reach out to our support team.</p>
 			<p>Best regards,</p>
@@ -18,4 +17,4 @@
 			<p>This email was automatically generated. Please do not reply.</p>
 		</footer>
 	</body>
-</email>
+</mailTemplates>

@@ -1,7 +1,7 @@
-﻿using MimeKit;
+﻿using Dummy.Infrastructure.Helpers;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
-using Dummy.Infrastructure.Helpers;
+using MimeKit;
 
 namespace Dummy.Infrastructure.Services.EmailService
 {

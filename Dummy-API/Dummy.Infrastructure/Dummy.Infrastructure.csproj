@@ -8,18 +8,23 @@
 	<ItemGroup>
 	  <None Remove="Localization\Resources\en-US.json" />
 	  <None Remove="Localization\Resources\vi-VN.json" />
+	  <None Remove="Services\EmailService\Template\EmailTemplate.xml" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <EmbeddedResource Include="Localization\Resources\en-US.json" />
 	  <EmbeddedResource Include="Localization\Resources\vi-VN.json" />
+	  <EmbeddedResource Include="Services\EmailService\Template\EmailTemplate.xml" />
 	</ItemGroup>
 
 	
 	<ItemGroup>
+		<PackageReference Include="AppAny.Quartz.EntityFrameworkCore.Migrations.PostgreSQL" Version="0.5.1" />
 		<PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
+		<PackageReference Include="DotLiquid" Version="2.2.692" />
 		<PackageReference Include="FluentValidation" Version="11.9.1" />
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+		<PackageReference Include="MailKit" Version="4.5.0" />
 		<PackageReference Include="MediatR" Version="12.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
@@ -30,8 +35,13 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.4" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.5.1" />
+		<PackageReference Include="MimeKit" Version="4.5.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+		<PackageReference Include="Quartz" Version="3.8.1" />
+		<PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.8.1" />
+		<PackageReference Include="Quartz.Plugins.TimeZoneConverter" Version="3.8.1" />
+		<PackageReference Include="Quartz.Serialization.Json" Version="3.8.1" />
 		<PackageReference Include="StackExchange.Redis" Version="2.7.33" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

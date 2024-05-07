@@ -1,4 +1,6 @@
-﻿using Dummy.Domain.Commons;
+﻿using AppAny.Quartz.EntityFrameworkCore.Migrations;
+using AppAny.Quartz.EntityFrameworkCore.Migrations.PostgreSQL;
+using Dummy.Domain.Commons;
 using Dummy.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -19,6 +21,9 @@ namespace Dummy.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasPostgresExtension("pgcrypto").HasPostgresExtension("uuid-ossp");
+            // Using "AppAny.Quartz.EntityFrameworkCore.Migrations.PostgreSQL" package
+            // Auto generate Quartz table
+            modelBuilder.AddQuartz(builder => builder.UsePostgreSql());
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MainDBContext).Assembly);
         }
 

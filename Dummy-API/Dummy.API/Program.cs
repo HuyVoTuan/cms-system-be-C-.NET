@@ -19,6 +19,7 @@ builder.Services.AuthConfiguration(builder.Configuration)
                 .RedisConfiguration(builder.Configuration)
                 .LocalizationConfiguration(builder.Configuration)
                 .FluentValidationConfiguration()
+                .EmailNotificationConfiguration(builder.Configuration)
                 .MediatRConfiguration();
 
 
