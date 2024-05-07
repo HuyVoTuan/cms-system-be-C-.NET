@@ -5,3 +5,4 @@ An API with authentication and authorization mechanism to serve for the final co
 * Redis Cache
 * Fluent Validation
 * Localization
+* Quartz BackgroundJob
