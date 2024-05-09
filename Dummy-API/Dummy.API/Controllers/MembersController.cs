@@ -5,6 +5,7 @@ using Dummy.Infrastructure.Commons.Base;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Dummy.API.Controllers
 {
@@ -13,10 +14,12 @@ namespace Dummy.API.Controllers
     public class MembersController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IStringLocalizer _localizer;
 
-        public MembersController(IMediator mediator)
+        public MembersController(IMediator mediator, IStringLocalizer localizer)
         {
             _mediator = mediator;
+            _localizer = localizer;
         }
 
         [HttpGet]
@@ -33,13 +36,8 @@ namespace Dummy.API.Controllers
         [HttpGet("{slug}")]
         public async Task<IActionResult> GetSingleMember([FromRoute] String slug, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(slug))
-            {
-                return BadRequest("Slug cannot be null or empty.");
-            }
-
-            var request = new GetSingleMemberQuery(slug);
-            var getSingleMemberResponse = await _mediator.Send(request, cancellationToken);
+            var query = new GetSingleMemberQuery(slug);
+            var getSingleMemberResponse = await _mediator.Send(query, cancellationToken);
 
             return new CustomActionResult<BaseResponseDTO<MemberDTO>>
             {
@@ -74,11 +72,13 @@ namespace Dummy.API.Controllers
 
         [Authorize]
         [HttpPut("{slug}")]
-        public async Task<IActionResult> UpsertMemberDetailAndLocation([FromRoute] String slug, [FromBody] UpsertMemberDetailAndLocationDTO requestDTO, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpsertMemberDetailAndLocation([FromRoute] String slug, 
+                                                                       [FromBody] UpsertMemberDetailAndLocationCommandRequestDTO requestDTO, 
+                                                                       CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(slug))
             {
-                return BadRequest("Slug cannot be null or empty.");
+                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
             }
 
             var request = new UpsertMemberDetailAndLocationCommand
@@ -87,11 +87,11 @@ namespace Dummy.API.Controllers
                 FirstName = requestDTO.FirstName,
                 LastName = requestDTO.LastName,
                 Email = requestDTO.Email,
-                Avatar = requestDTO.Avatar,
                 Position = requestDTO.Position,
+                Avatar = requestDTO.Avatar,
                 Address = requestDTO.Address,
                 City = requestDTO.City,
-                District = requestDTO.District,
+                District = requestDTO.District
             };
 
             var upsertMemberDetailAndLocationResponse = await _mediator.Send(request, cancellationToken);
@@ -109,7 +109,7 @@ namespace Dummy.API.Controllers
         {
             if (string.IsNullOrEmpty(slug))
             {
-                return BadRequest("Slug cannot be null or empty.");
+                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
             }
 
             var request = new DeleteMemberCommand(slug);
@@ -123,17 +123,17 @@ namespace Dummy.API.Controllers
 
         [Authorize]
         [HttpPost("{slug}/refresh-token")]
-        public async Task<IActionResult> RefreshTokenMember([FromRoute] String slug, [FromBody] RefreshTokenMemberCommandDTO requestDTO, CancellationToken cancellationToken)
+        public async Task<IActionResult> RefreshTokenMember([FromRoute] String slug, [FromBody] RefreshTokenMemberCommandRequestDTO requestDTO, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(slug))
             {
-                return BadRequest("Slug cannot be null or empty.");
+                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
             }
 
             var request = new RefreshTokenMemberCommand
             {
                 Slug = slug,
-                RefreshToken = requestDTO.RefreshToken
+                RefreshToken = requestDTO.RefreshToken,
             };
 
             var refreshTokenMemberResult = await _mediator.Send(request, cancellationToken);
@@ -151,7 +151,7 @@ namespace Dummy.API.Controllers
         {
             if (string.IsNullOrEmpty(slug))
             {
-                return BadRequest("Slug cannot be null or empty.");
+                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
             }
 
             var request = new RevokeMemberRefreshTokenCommand(slug);

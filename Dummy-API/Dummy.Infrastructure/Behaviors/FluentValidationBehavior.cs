@@ -14,20 +14,21 @@ namespace Dummy.Infrastructure.Behaviors
             _validators = validators;
         }
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
-        {
+        {      
             var context = new ValidationContext<TRequest>(request);
 
             var validationResults = await Task.WhenAll(_validators.Select(v => v.ValidateAsync(context, cancellationToken)));
 
-            var failures = validationResults.SelectMany(result => result.Errors)
+            var failures = validationResults.Where(validationResult => !validationResult.IsValid)
+                                            .SelectMany(result => result.Errors)
                                             .Where(failure => failure != null)
                                             .GroupBy(message => message.PropertyName)
                                             .ToList()
-                                            .ToDictionary(message => message.Key, message => message.Select(content => content.ErrorMessage.Replace("'", "")));
-
+                                            .ToDictionary(message => message.Key, message => message.Select(content => content.ErrorMessage));
+            
             if (failures.Any())
             {
-                throw new RestfulAPIException(HttpStatusCode.BadRequest, failures);
+                throw new RestfulAPIException(HttpStatusCode.BadRequest, failures);            
             }
 
             return await next();

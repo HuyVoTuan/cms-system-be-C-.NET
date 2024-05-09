@@ -4,6 +4,7 @@ using Dummy.Infrastructure;
 using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Queries
@@ -12,9 +13,11 @@ namespace Dummy.Application.Members.Queries
     internal class GetSingleMemberQueryHandler : IRequestWithBaseResponseHandler<GetSingleMemberQuery, MemberDTO>
     {
         private readonly MainDBContext _mainDBContext;
+        private readonly IStringLocalizer<GetSingleMemberQueryHandler> _localizer;
 
-        public GetSingleMemberQueryHandler(MainDBContext mainDBContext)
+        public GetSingleMemberQueryHandler(MainDBContext mainDBContext, IStringLocalizer<GetSingleMemberQueryHandler> localizer)
         {
+            _localizer = localizer;
             _mainDBContext = mainDBContext;
         }
         public async Task<BaseResponseDTO<MemberDTO>> Handle(GetSingleMemberQuery request, CancellationToken cancellationToken)
@@ -38,31 +41,17 @@ namespace Dummy.Application.Members.Queries
                                                    })
                                                });
 
-            var result = await query.FirstOrDefaultAsync(x => x.Slug == request.Slug, cancellationToken);
+            var memberDTO = await query.FirstOrDefaultAsync(x => x.Slug == request.Slug, cancellationToken);
 
-            if (result is null)
+            if (memberDTO is null)
             {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} member does not exists!");
+                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} {_localizer["failure.not_exists"]}!");
             }
-
-            // Map to DTO
-            var memberDTO = new MemberDTO
-            {
-                Slug = result.Slug,
-                FirstName = result.FirstName,
-                LastName = result.LastName,
-                Email = result.Email,
-                Position = result.Position,
-                Avatar = result.Avatar,
-                Locations = result.Locations,
-                CreatedDate = result.CreatedDate,
-                UpdatedDate = result.UpdatedDate,
-            };
 
             return new BaseResponseDTO<MemberDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = $"Successfully retrieve {result.Slug} member",
+                Message = $"{_localizer["successful.retrieve_user"]} {memberDTO.Slug} ",
                 Data = memberDTO
             };
         }

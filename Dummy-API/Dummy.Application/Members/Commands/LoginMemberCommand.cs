@@ -9,7 +9,7 @@ using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
-    public class LoginMemberCommand() : IRequestWithBaseResponse<AuthResponseDTO>
+    public class LoginMemberCommand : IRequestWithBaseResponse<AuthResponseDTO>
     {
         public String Email { get; init; }
         public String Password { get; init; }
@@ -19,33 +19,33 @@ namespace Dummy.Application.Members.Commands
     // Command validation
     public class LoginMemberCommandValidator : AbstractValidator<LoginMemberCommand>
     {
-        private readonly IStringLocalizer _localizer;
-        private readonly MainDBContext _mainDBContext;
+        private readonly IStringLocalizer<LoginMemberCommandValidator> _localizer;
 
-        public LoginMemberCommandValidator(MainDBContext mainDBContext, IStringLocalizer localizer)
+        public LoginMemberCommandValidator(IStringLocalizer<LoginMemberCommandValidator> localizer)
         {
             _localizer = localizer;
-            _mainDBContext = mainDBContext;
 
             RuleFor(x => x.Email).NotEmpty()
                                  .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["cant_be_empty"]);
+                                 .WithMessage(_localizer["failure.cant_be_empty"]);
 
             RuleFor(x => x.Password).NotEmpty()
-                                    .OverridePropertyName(_localizer["password"])
-                                    .WithMessage(_localizer["cant_be_empty"]);
+                                    .OverridePropertyName(_localizer["password.password"])
+                                    .WithMessage(_localizer["failure.cant_be_empty"]);
         }
     }
 
     internal class LoginMemberCommandHandler : IRequestWithBaseResponseHandler<LoginMemberCommand, AuthResponseDTO>
     {
-        private readonly MainDBContext _mainDBContext;
         private readonly IAuthService _authService;
+        private readonly MainDBContext _mainDBContext;
+        private readonly IStringLocalizer<LoginMemberCommandHandler> _localizer;
 
-        public LoginMemberCommandHandler(MainDBContext mainDBContext, IAuthService authService)
+        public LoginMemberCommandHandler(MainDBContext mainDBContext, IAuthService authService, IStringLocalizer<LoginMemberCommandHandler> localizer)
         {
-            _mainDBContext = mainDBContext;
+            _localizer = localizer;
             _authService = authService;
+            _mainDBContext = mainDBContext;
         }
         public async Task<BaseResponseDTO<AuthResponseDTO>> Handle(LoginMemberCommand request, CancellationToken cancellationToken)
         {
@@ -55,7 +55,7 @@ namespace Dummy.Application.Members.Commands
 
             if (existedMember is null || !_authService.VerifyPassword(request.Password, existedMember.Password))
             {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"User {request.Email} does not exists!");
+                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Email} {_localizer["failure.not_exists"]}!");
             }
 
 
@@ -75,7 +75,7 @@ namespace Dummy.Application.Members.Commands
             return new BaseResponseDTO<AuthResponseDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = "Successfully login in",
+                Message = _localizer["successful.login"],
                 Data = authResponseDTO
             };
         }

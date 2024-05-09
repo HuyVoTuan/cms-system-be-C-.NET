@@ -29,6 +29,7 @@ var app = builder.Build();
 app.UseExceptionHandler(opt => { }); // Global Exception Handler
 app.UseMiddleware<LocalizationMiddleware>();
 
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

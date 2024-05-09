@@ -13,6 +13,74 @@ using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
+    public class UpsertMemberDetailAndLocationCommandRequestDTO : IRequestWithBaseResponse<MemberDTO>
+    {
+        public String Avatar { get; init; }
+        public String FirstName { get; init; }
+        public String LastName { get; init; }
+        public String Email { get; init; }
+        public String Position { get; init; }
+        public String Address { get; init; }
+        public String District { get; init; }
+        public String City { get; init; }
+    }
+
+    public class UpsertMemberDetailAndLocationCommandRequestDTOValidator : AbstractValidator<UpsertMemberDetailAndLocationCommandRequestDTO>
+    {
+        private readonly MainDBContext _mainDBContext;
+        private readonly IStringLocalizer<UpsertMemberDetailAndLocationCommandRequestDTOValidator> _localizer;
+
+        public UpsertMemberDetailAndLocationCommandRequestDTOValidator(MainDBContext mainDBContext, IStringLocalizer<UpsertMemberDetailAndLocationCommandRequestDTOValidator> localizer)
+        {
+            _localizer = localizer;
+            _mainDBContext = mainDBContext;
+
+            RuleFor(x => x.FirstName).NotEmpty()
+                                     .OverridePropertyName(_localizer["firstname"])
+                                     .WithMessage(_localizer["failure.cant_be_empty"]);
+
+            RuleFor(x => x.LastName).NotEmpty()
+                                    .OverridePropertyName(_localizer["lastname"])
+                                    .WithMessage(_localizer["failure.cant_be_empty"]);
+
+            RuleFor(x => x.Email).EmailAddress()
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["failure.invalid"])
+                                 .NotEmpty()
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["failure.cant_be_empty"])
+                                 .Must(email =>
+                                 {
+                                     var isAdminEmail = email.Contains("admin");
+                                     return !isAdminEmail;
+                                 })
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["failure.invalid"])
+                                 .Must(email =>
+                                 {
+                                     var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
+                                     return !isExisted;
+                                 })
+                                .OverridePropertyName(_localizer["email"])
+                                .WithMessage(_localizer["failure.already_exists"]);
+
+            RuleFor(x => x.Position).NotEmpty()
+                                    .OverridePropertyName(_localizer["position"])
+                                    .WithMessage(_localizer["failure.cant_be_empty"]);
+
+            RuleFor(x => x.Address).NotEmpty()
+                                   .OverridePropertyName(_localizer["address"])
+                                   .WithMessage(_localizer["failure.cant_be_empty"]);
+
+            RuleFor(x => x.District).NotEmpty()
+                                    .OverridePropertyName(_localizer["district"])
+                                    .WithMessage(_localizer["failure.cant_be_empty"]);
+
+            RuleFor(x => x.City).NotEmpty()
+                                .OverridePropertyName(_localizer["city"])
+                                .WithMessage(_localizer["failure.cant_be_empty"]);
+        }
+    }
     public class UpsertMemberDetailAndLocationCommand : IRequestWithBaseResponse<MemberDTO>
     {
         public String Slug { get; init; }
@@ -26,55 +94,17 @@ namespace Dummy.Application.Members.Commands
         public String City { get; init; }
     }
 
-    public class UpsertMemberDetailAndLocationCommandValidator : AbstractValidator<UpsertMemberDetailAndLocationCommand>
-    {
-        private readonly IStringLocalizer _localizer;
-        private readonly MainDBContext _mainDBContext;
-
-        public UpsertMemberDetailAndLocationCommandValidator(MainDBContext mainDBContext, IStringLocalizer localizer)
-        {
-            _localizer = localizer;
-            _mainDBContext = mainDBContext;
-
-            RuleFor(x => x.FirstName).NotEmpty()
-                                     .OverridePropertyName(_localizer["firstname"])
-                                     .WithMessage(_localizer["cant_be_empty"]);
-
-            RuleFor(x => x.LastName).NotEmpty()
-                                    .OverridePropertyName(_localizer["lastname"])
-                                    .WithMessage(_localizer["cant_be_empty"]);
-
-            RuleFor(x => x.Email).NotEmpty()
-                                  .OverridePropertyName(_localizer["email"])
-                                  .WithMessage(_localizer["cant_be_empty"])
-                                  .Must(email =>
-                                  {
-                                      var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
-                                      return !isExisted;
-                                  })
-                                 .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["already_exists"]);
-
-            RuleFor(x => x.Address).NotEmpty()
-                                   .OverridePropertyName(_localizer["address"])
-                                   .WithMessage(_localizer["cant_be_empty"]);
-
-            RuleFor(x => x.District).NotEmpty()
-                                    .OverridePropertyName(_localizer["district"])
-                                    .WithMessage(_localizer["cant_be_empty"]);
-
-            RuleFor(x => x.City).NotEmpty()
-                                .OverridePropertyName(_localizer["city"])
-                                .WithMessage(_localizer["cant_be_empty"]);
-        }
-    }
     internal class UpsertMemberDetailAndLocationCommandHandler : IRequestWithBaseResponseHandler<UpsertMemberDetailAndLocationCommand, MemberDTO>
     {
         private readonly MainDBContext _mainDBContext;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IStringLocalizer<UpsertMemberDetailAndLocationCommandHandler> _localizer;
 
-        public UpsertMemberDetailAndLocationCommandHandler(MainDBContext mainDBContext, ICurrentUserService currentUserService)
+        public UpsertMemberDetailAndLocationCommandHandler(MainDBContext mainDBContext,
+                                                           IStringLocalizer<UpsertMemberDetailAndLocationCommandHandler> localizer,
+                                                           ICurrentUserService currentUserService)
         {
+            _localizer = localizer;
             _mainDBContext = mainDBContext;
             _currentUserService = currentUserService;
         }
@@ -87,12 +117,12 @@ namespace Dummy.Application.Members.Commands
 
             if (existingMember is null)
             {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} member does not exists!");
+                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} {_localizer["failure.not_exists"]}");
             }
 
             if (isAdmin)
             {
-                throw new RestfulAPIException(HttpStatusCode.BadRequest, "Invalid username, please choose another username!");
+                throw new RestfulAPIException(HttpStatusCode.BadRequest, _localizer["failure.invalid"]);
             }
 
             existingMember.Slug = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}");
@@ -143,8 +173,6 @@ namespace Dummy.Application.Members.Commands
                     District = x.District,
                     City = x.City,
                 }),
-                CreatedDate = existingMember.CreatedDate,
-                UpdatedDate = existingMember.UpdatedDate
             };
 
             // Save to database
@@ -153,7 +181,7 @@ namespace Dummy.Application.Members.Commands
             return new BaseResponseDTO<MemberDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = $"Successfully update {existingMember.Slug} user",
+                Message = $"{_localizer["successful.update"]} {existingMember.Slug}",
                 Data = memberDTO
             };
         }

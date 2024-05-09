@@ -1,8 +1,5 @@
-﻿using Dummy.Infrastructure.Services.EmailService;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Runtime;
 
 namespace Dummy.Infrastructure.Extensions
 {
@@ -14,7 +11,7 @@ namespace Dummy.Infrastructure.Extensions
             {
                 builder.AddConsole();
             });
-            services.AddMemoryCache();         
+            services.AddMemoryCache();
             return services;
         }
     }

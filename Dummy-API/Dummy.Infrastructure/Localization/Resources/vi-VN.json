@@ -3,6 +3,7 @@
   "firstname": "tên riêng",
   "lastname": "tên họ",
   "email": "địa chỉ email",
+  "position": "vị trí công việc",
   "password": {
     "password": "mật khẩu",
     "min_6_length": "phải lớn hơn 6 ký tự"
@@ -15,7 +16,21 @@
     "page_index": "thứ tự trang",
     "page_limit": "giới hạn số lượng phần tử cho 1 trang"
   },
-  "cant_be_empty": "không được để trống",
-  "already_exists": "đã được đăng ký",
-  "invalid": "không hợp lệ"
+  "failure": {
+    "cant_be_empty": "không được để trống",
+    "already_exists": "đã được đăng ký",
+    "not_exists": "không tồn tại",
+    "invalid": "không hợp lệ"
+  },
+  "successful": {
+    "update": "cập nhật thành công",
+    "delete": "xóa thành công",
+    "login": "đăng nhập thành công",
+    "register": "đăng ký người dùng thành công",
+    "revoke_token": "thu hồi token của người dùng thành công",
+    "refresh_token": "làm mới token của người dùng thành công",
+    "retrieve_token": "truy xuất refersh token của người dùng thành công",
+    "retrieve_users": "truy xuất tất cả người dùng thành công",
+    "retrieve_user": "truy xuất người dùng thành công"
+  }
 }

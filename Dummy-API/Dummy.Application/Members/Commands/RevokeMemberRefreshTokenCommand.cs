@@ -14,24 +14,28 @@ namespace Dummy.Application.Members.Commands
     // Command validation
     public class RevokeMemberRefreshTokenCommandValidator : AbstractValidator<RevokeMemberRefreshTokenCommand>
     {
-        private readonly IStringLocalizer _localizer;
+        private readonly IStringLocalizer<RevokeMemberRefreshTokenCommandValidator> _localizer;
 
-        public RevokeMemberRefreshTokenCommandValidator(IStringLocalizer localizer)
+        public RevokeMemberRefreshTokenCommandValidator(IStringLocalizer<RevokeMemberRefreshTokenCommandValidator> localizer)
         {
             _localizer = localizer;
 
             RuleFor(x => x.Slug).NotEmpty()
                                 .OverridePropertyName(_localizer["slug"])
-                                .WithMessage(_localizer["cant_be_empty"]);
+                                .WithMessage(_localizer["failure.cant_be_empty"]);
         }
     }
     internal class RevokeMemberRefreshTokenCommandHandler : IRequestWithBaseResponseHandler<RevokeMemberRefreshTokenCommand>
     {
         private readonly MainDBContext _mainDBContext;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IStringLocalizer<RevokeMemberRefreshTokenCommandHandler> _localizer;
 
-        public RevokeMemberRefreshTokenCommandHandler(MainDBContext mainDBContext, ICurrentUserService currentUserService)
+        public RevokeMemberRefreshTokenCommandHandler(MainDBContext mainDBContext,
+                                                      IStringLocalizer<RevokeMemberRefreshTokenCommandHandler> localizer,
+                                                      ICurrentUserService currentUserService)
         {
+            _localizer = localizer;
             _mainDBContext = mainDBContext;
             _currentUserService = currentUserService;
         }
@@ -47,7 +51,7 @@ namespace Dummy.Application.Members.Commands
             return new BaseResponseDTO
             {
                 Code = HttpStatusCode.NoContent,
-                Message = "Successfully revoke all current user tokens"
+                Message = _localizer["successful.revoke_token"]
             };
         }
     }

@@ -18,29 +18,31 @@ namespace Dummy.Application.Members.Queries
     // Command validation
     public class GetPagingMemberListQueryValidator : AbstractValidator<GetPagingMemberListQuery>
     {
-        private readonly IStringLocalizer _localizer;
+        private readonly IStringLocalizer<GetPagingMemberListQueryValidator> _localizer;
 
 
-        public GetPagingMemberListQueryValidator(IStringLocalizer localizer)
+        public GetPagingMemberListQueryValidator(IStringLocalizer<GetPagingMemberListQueryValidator> localizer)
         {
             _localizer = localizer;
 
             RuleFor(x => x.PageIndex).Must(x => int.TryParse(x, out var result) && result > 0)
                                      .OverridePropertyName(_localizer["paging.page_index"])
-                                     .WithMessage(_localizer["invalid"]);
+                                     .WithMessage(_localizer["failure.invalid"]);
 
             RuleFor(x => x.PageLimit).Must(x => int.TryParse(x, out var result) && result > 0)
                                      .OverridePropertyName(_localizer["paging.page_limit"])
-                                     .WithMessage(_localizer["invalid"]);
+                                     .WithMessage(_localizer["failure.invalid"]);
         }
     }
 
     internal class GetPagingMemberListQuerytHandler : IRequestWithBaseResponseHandler<GetPagingMemberListQuery, PagingResponseDTO<MemberDTO>>
     {
         private readonly MainDBContext _mainDBContext;
+        private readonly IStringLocalizer<GetPagingMemberListQuerytHandler> _localizer;
 
-        public GetPagingMemberListQuerytHandler(MainDBContext mainDBContext)
+        public GetPagingMemberListQuerytHandler(MainDBContext mainDBContext, IStringLocalizer<GetPagingMemberListQuerytHandler> localizer)
         {
+            _localizer = localizer;
             _mainDBContext = mainDBContext;
         }
         public async Task<BaseResponseDTO<PagingResponseDTO<MemberDTO>>> Handle(GetPagingMemberListQuery request, CancellationToken cancellationToken)
@@ -82,7 +84,7 @@ namespace Dummy.Application.Members.Queries
             return new BaseResponseDTO<PagingResponseDTO<MemberDTO>>
             {
                 Code = HttpStatusCode.OK,
-                Message = "Successfully get all memebers",
+                Message = _localizer["successful.retrieve_users"],
                 Data = new PagingResponseDTO<MemberDTO>
                 {
                     PageIndex = pageIndex,

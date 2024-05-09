@@ -22,8 +22,8 @@ namespace Dummy.Infrastructure.Extensions
                 opt.SupportedCultures = supportedCultureInfos.Select(x => new CultureInfo(x)).ToList();
             });
 
-            services.AddScoped<IStringLocalizer, JsonStringLocalizer>();
             services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+            services.AddScoped<IStringLocalizer, JsonStringLocalizer>();
             return services;
         }
     }

@@ -9,8 +9,7 @@ namespace Dummy.Infrastructure.Extensions
         public static IServiceCollection MediatRConfiguration(this IServiceCollection services)
         {
             var executingAssembly = AppDomain.CurrentDomain.Load("Dummy.Application");
-            services.AddMediatR(cfg =>
-                     cfg.RegisterServicesFromAssemblies(executingAssembly));
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(executingAssembly));
 
             // MediatR Pipelines
             services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(MediatRLoggingBehavior<,>));

@@ -7,12 +7,13 @@ using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
 using Dummy.Infrastructure.Services.EmailService;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
-    public class RegisterMemberCommand() : IRequestWithBaseResponse<AuthResponseDTO>
+    public class RegisterMemberCommand : IRequestWithBaseResponse<AuthResponseDTO>
     {
         public String Avatar { get; init; }
         public String FirstName { get; init; }
@@ -37,57 +38,69 @@ namespace Dummy.Application.Members.Commands
 
             RuleFor(x => x.FirstName).NotEmpty()
                                      .OverridePropertyName(_localizer["firstname"])
-                                     .WithMessage(_localizer["cant_be_empty"]);
+                                     .WithMessage(_localizer["failure.cant_be_empty"]);
 
             RuleFor(x => x.LastName).NotEmpty()
                                     .OverridePropertyName(_localizer["lastname"])
-                                    .WithMessage(_localizer["cant_be_empty"]);
+                                    .WithMessage(_localizer["failure.cant_be_empty"]);
 
             RuleFor(x => x.Email).EmailAddress()
                                  .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["invalid"])
+                                 .WithMessage(_localizer["failure.invalid"])
                                  .NotEmpty()
                                  .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["cant_be_empty"])
+                                 .WithMessage(_localizer["failure.cant_be_empty"])
+                                 .Must(email =>
+                                 {
+                                     var isAdminEmail = email.Contains("admin");
+                                     return !isAdminEmail;
+                                 })
+                                 .OverridePropertyName(_localizer["email"])
+                                 .WithMessage(_localizer["failure.invalid"])
                                  .Must(email =>
                                  {
                                      var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
                                      return !isExisted;
                                  })
                                 .OverridePropertyName(_localizer["email"])
-                                .WithMessage(_localizer["already_exists"]);
+                                .WithMessage(_localizer["failure.already_exists"]);
 
             RuleFor(x => x.Password).NotEmpty()
                                     .OverridePropertyName(_localizer["password.password"])
-                                    .WithMessage(_localizer["cant_be_empty"])
+                                    .WithMessage(_localizer["failure.cant_be_empty"])
                                     .MinimumLength(6)
                                     .OverridePropertyName(_localizer["password.password"])
                                     .WithMessage(_localizer["password.min_6_length"]);
 
             RuleFor(x => x.Address).NotEmpty()
                                    .OverridePropertyName(_localizer["address"])
-                                   .WithMessage(_localizer["cant_be_empty"]);
+                                   .WithMessage(_localizer["failure.cant_be_empty"]);
 
             RuleFor(x => x.District).NotEmpty()
                                     .OverridePropertyName(_localizer["district"])
-                                    .WithMessage(_localizer["cant_be_empty"]);
+                                    .WithMessage(_localizer["failure.cant_be_empty"]);
 
             RuleFor(x => x.City).NotEmpty()
                                 .OverridePropertyName(_localizer["city"])
-                                .WithMessage(_localizer["cant_be_empty"]);
+                                .WithMessage(_localizer["failure.cant_be_empty"]);
         }
     }
 
     internal class RegisterMemberCommandHandler : IRequestWithBaseResponseHandler<RegisterMemberCommand, AuthResponseDTO>
     {
-        private readonly MainDBContext _mainDBContext;
         private readonly IAuthService _authService;
+        private readonly MainDBContext _mainDBContext;
         private readonly IEmailNotificationService _emailNotificationService;
+        private readonly IStringLocalizer<RegisterMemberCommandHandler> _localizer;
 
-        public RegisterMemberCommandHandler(MainDBContext mainDBContext, IAuthService authService, IEmailNotificationService emailNotificationService)
+        public RegisterMemberCommandHandler(MainDBContext mainDBContext,
+                                            IAuthService authService,
+                                            IEmailNotificationService emailNotificationService,
+                                            IStringLocalizer<RegisterMemberCommandHandler> localizer)
         {
-            _mainDBContext = mainDBContext;
+            _localizer = localizer;
             _authService = authService;
+            _mainDBContext = mainDBContext;
             _emailNotificationService = emailNotificationService;
         }
         public async Task<BaseResponseDTO<AuthResponseDTO>> Handle(RegisterMemberCommand request, CancellationToken cancellationToken)
@@ -96,7 +109,7 @@ namespace Dummy.Application.Members.Commands
 
             if (isAdmin)
             {
-                throw new RestfulAPIException(HttpStatusCode.BadRequest, "Invalid username, please choose another username!");
+                throw new RestfulAPIException(HttpStatusCode.BadRequest, _localizer["failure.invalid"]);
             }
 
             var newMember = new Member
@@ -140,12 +153,14 @@ namespace Dummy.Application.Members.Commands
                 RefreshToken = refreshToken.Token
             };
 
-            await _emailNotificationService.SendEmailAsync("huy.vt00578@sinhvien.hoasen.edu.vn", new {Username = newMember.Slug }, "register");
+            // TODO
+            // Implement email notification background job
+            await _emailNotificationService.SendEmailAsync("huy.vt00578@sinhvien.hoasen.edu.vn", new { Username = newMember.Slug }, "register");
 
             return new BaseResponseDTO<AuthResponseDTO>
             {
                 Code = HttpStatusCode.Created,
-                Message = $"Successfully register {newMember.Slug} user",
+                Message = $"{_localizer["successful.register"]} {newMember.Slug}",
                 Data = authResponseDTO
             };
         }

@@ -1,4 +1,5 @@
 ﻿
+using DotLiquid;
 using Dummy.Infrastructure.Commons.Base;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using System.Net;
 
 namespace Dummy.Infrastructure.Middlewares
 {
+
     public class RestfulAPIExceptionHandler : IExceptionHandler
     {
         private readonly ILogger<RestfulAPIExceptionHandler> _logger;
@@ -20,7 +22,6 @@ namespace Dummy.Infrastructure.Middlewares
             _env = env;
             _logger = logger;
         }
-
 
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
@@ -39,7 +40,7 @@ namespace Dummy.Infrastructure.Middlewares
             switch (exception)
             {
                 case RestfulAPIException restfulAPIException:
-                    httpContext.Response.StatusCode = (int)restfulAPIException._httpStatusCode;
+                    httpContext.Response.StatusCode = (int)restfulAPIException.Data[RestfulAPIException.STATUS_CODE];
                     break;
                 case NotImplementedException notImplementedException:
                     httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -55,7 +56,7 @@ namespace Dummy.Infrastructure.Middlewares
                 Type = exception.GetType().Name,
                 Title = "An unexpected error occurred",
                 Detail = exception.Message,
-                Instance = $"{httpContext.Request.Method} {httpContext.Request.Path}"
+                Instance = $"{httpContext.Request.Method} {httpContext.Request.Path}",
             };
         }
     }

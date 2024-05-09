@@ -5,7 +5,7 @@ using System.Xml.Linq;
 namespace Dummy.Infrastructure.Helpers
 {
     public static class EmailHelper
-    {      
+    {
         private static XDocument ReadConfigFile()
         {
             string xmlSource = "";

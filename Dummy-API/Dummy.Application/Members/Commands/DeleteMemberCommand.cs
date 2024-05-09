@@ -13,23 +13,25 @@ namespace Dummy.Application.Members.Commands
     // Command validation
     public class DeleteMemberCommandValidator : AbstractValidator<DeleteMemberCommand>
     {
-        private readonly IStringLocalizer _localizer;
+        private readonly IStringLocalizer<DeleteMemberCommandValidator> _localizer;
 
-        public DeleteMemberCommandValidator(IStringLocalizer localizer)
+        public DeleteMemberCommandValidator(IStringLocalizer<DeleteMemberCommandValidator> localizer)
         {
             _localizer = localizer;
 
             RuleFor(x => x.Slug).NotEmpty()
                                 .OverridePropertyName(_localizer["slug"])
-                                .WithMessage(_localizer["cant_be_empty"]);
+                                .WithMessage(_localizer["failure.cant_be_empty"]);
         }
     }
     internal class DeleteMemberCommandHandler : IRequestWithBaseResponseHandler<DeleteMemberCommand>
     {
         private readonly MainDBContext _mainDBContext;
+        private readonly IStringLocalizer<DeleteMemberCommandHandler> _localizer;
 
-        public DeleteMemberCommandHandler(MainDBContext mainDBContext)
+        public DeleteMemberCommandHandler(MainDBContext mainDBContext, IStringLocalizer<DeleteMemberCommandHandler> localizer)
         {
+            _localizer = localizer;
             _mainDBContext = mainDBContext;
         }
         public async Task<BaseResponseDTO> Handle(DeleteMemberCommand request, CancellationToken cancellationToken)
@@ -38,7 +40,7 @@ namespace Dummy.Application.Members.Commands
 
             if (existsMember is null)
             {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} member does not exists!");
+                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} {_localizer["failure.not_exists"]}!");
             }
 
             _mainDBContext.Members.Remove(existsMember);
@@ -47,7 +49,7 @@ namespace Dummy.Application.Members.Commands
             return new BaseResponseDTO
             {
                 Code = HttpStatusCode.NoContent,
-                Message = $"Successfully delete ${existsMember.Slug} user"
+                Message = $"${_localizer["successful.delete"]} {existsMember.Slug}"
             };
         }
     }

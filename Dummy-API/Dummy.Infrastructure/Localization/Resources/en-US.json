@@ -3,6 +3,7 @@
   "firstname": "firstname",
   "lastname": "lastname",
   "email": "email",
+  "position":  "position",
   "password": {
     "password": "password",
     "min_6_length": "must be more than 6 characters"
@@ -15,7 +16,21 @@
     "page_index": "page index",
     "page_limit": "page limit"
   },
-  "cant_be_empty": "can not be empty",
-  "already_exists": "already exists",
-  "invalid": "invalid"
+  "failure": {
+    "cant_be_empty": "can not be empty",
+    "already_exists": "already exists",
+    "not_exists": "not exists",
+    "invalid": "invalid"
+  },
+  "successful": {
+    "update": "successfully updated",
+    "delete": "successfully deleted",
+    "login": "successfully logged in",
+    "register": "successfully registered",
+    "revoke_token": "successfully revoke user token",
+    "refresh_token": "successfully refersh user token",
+    "retrieve_token": "successfully retrieve user refersh token",
+    "retrieve_users": "successfully retrieve users",
+    "retrieve_user": "successfully retrieve user"
+  }
 }
