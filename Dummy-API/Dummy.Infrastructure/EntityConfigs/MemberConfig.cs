@@ -12,6 +12,8 @@ namespace Dummy.Infrastructure.EntityConfigs
 
             builder.HasKey(x => x.Id);
 
+            builder.Property(x => x.IsActive).HasDefaultValue(false);
+
             builder.Property(x => x.Slug).IsRequired();
             builder.Property(x => x.FirstName).IsRequired();
             builder.Property(x => x.LastName).IsRequired();

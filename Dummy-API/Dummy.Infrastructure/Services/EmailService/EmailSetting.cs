@@ -1,12 +1,11 @@
 ﻿namespace Dummy.Infrastructure.Services.EmailService
 {
-    public class EmailSetting
+    internal class EmailSetting
     {
-        public String Mail { get; set; }
-        public String DisplayName { get; set; }
-        public String Password { get; set; }
-        public string Host { get; set; }
-        public int Port { get; set; }
-
+        public String Mail { get; init; }
+        public String DisplayName { get; init; }
+        public String Password { get; init; }
+        public string Host { get; init; }
+        public int Port { get; init; }
     }
 }

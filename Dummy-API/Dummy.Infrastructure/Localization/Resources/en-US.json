@@ -3,7 +3,7 @@
   "firstname": "firstname",
   "lastname": "lastname",
   "email": "email",
-  "position":  "position",
+  "position": "position",
   "password": {
     "password": "password",
     "min_6_length": "must be more than 6 characters"
@@ -32,5 +32,11 @@
     "retrieve_token": "successfully retrieve user refersh token",
     "retrieve_users": "successfully retrieve users",
     "retrieve_user": "successfully retrieve user"
+  },
+  "notification": {
+    "welcome_email": {
+      "subject": "DUMMY_API: Welcome to our community!",
+      "content": "We are thrilled to welcome you to our community! You have successfully registered an account with us."
+    }
   }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Dummy.Infrastructure.Services.JobService;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 
@@ -28,6 +29,7 @@ namespace Dummy.Infrastructure.Extensions
                 });
             });
 
+            services.AddScoped<IJobService, JobService>();
             return services;
         }
     }

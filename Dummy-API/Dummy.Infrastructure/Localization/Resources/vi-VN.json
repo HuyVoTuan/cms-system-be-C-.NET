@@ -32,5 +32,11 @@
     "retrieve_token": "truy xuất refersh token của người dùng thành công",
     "retrieve_users": "truy xuất tất cả người dùng thành công",
     "retrieve_user": "truy xuất người dùng thành công"
+  },
+  "notification": {
+    "welcome_email": {
+      "subject": "DUMMY_API: Chào mừng bạn đến với cộng đồng của chúng tôi!",
+      "content": "Chúng tôi rất vui mừng chào đón bạn đến với cộng đồng của chúng tôi! Bạn đã đăng ký tài khoản thành công với chúng tôi."
+    }
   }
 }

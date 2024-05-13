@@ -13,12 +13,11 @@ using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
-    public class UpsertMemberDetailAndLocationCommandRequestDTO : IRequestWithBaseResponse<MemberDTO>
+    public class UpsertMemberDetailAndLocationCommandRequestDTO
     {
         public String Avatar { get; init; }
         public String FirstName { get; init; }
         public String LastName { get; init; }
-        public String Email { get; init; }
         public String Position { get; init; }
         public String Address { get; init; }
         public String District { get; init; }
@@ -37,32 +36,17 @@ namespace Dummy.Application.Members.Commands
 
             RuleFor(x => x.FirstName).NotEmpty()
                                      .OverridePropertyName(_localizer["firstname"])
-                                     .WithMessage(_localizer["failure.cant_be_empty"]);
+                                     .WithMessage(_localizer["failure.cant_be_empty"])
+                                     .Must(StringHelper.IsValidString)
+                                     .OverridePropertyName(_localizer["firstname"])
+                                     .WithMessage(_localizer["failure.invalid"]);
 
             RuleFor(x => x.LastName).NotEmpty()
                                     .OverridePropertyName(_localizer["lastname"])
-                                    .WithMessage(_localizer["failure.cant_be_empty"]);
-
-            RuleFor(x => x.Email).EmailAddress()
-                                 .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["failure.invalid"])
-                                 .NotEmpty()
-                                 .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["failure.cant_be_empty"])
-                                 .Must(email =>
-                                 {
-                                     var isAdminEmail = email.Contains("admin");
-                                     return !isAdminEmail;
-                                 })
-                                 .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["failure.invalid"])
-                                 .Must(email =>
-                                 {
-                                     var isExisted = _mainDBContext.Members.Any(x => x.Email == email);
-                                     return !isExisted;
-                                 })
-                                .OverridePropertyName(_localizer["email"])
-                                .WithMessage(_localizer["failure.already_exists"]);
+                                    .WithMessage(_localizer["failure.cant_be_empty"])
+                                    .Must(StringHelper.IsValidString)
+                                    .OverridePropertyName(_localizer["lastname"])
+                                    .WithMessage(_localizer["failure.invalid"]);
 
             RuleFor(x => x.Position).NotEmpty()
                                     .OverridePropertyName(_localizer["position"])
@@ -81,20 +65,19 @@ namespace Dummy.Application.Members.Commands
                                 .WithMessage(_localizer["failure.cant_be_empty"]);
         }
     }
-    public class UpsertMemberDetailAndLocationCommand : IRequestWithBaseResponse<MemberDTO>
+    public class UpsertMemberDetailAndLocationCommand : IRequestWithBaseResponse<UpsertMemberDetailAndLocationDTO>
     {
         public String Slug { get; init; }
         public String Avatar { get; init; }
         public String FirstName { get; init; }
         public String LastName { get; init; }
-        public String Email { get; init; }
         public String Position { get; init; }
         public String Address { get; init; }
         public String District { get; init; }
         public String City { get; init; }
     }
 
-    internal class UpsertMemberDetailAndLocationCommandHandler : IRequestWithBaseResponseHandler<UpsertMemberDetailAndLocationCommand, MemberDTO>
+    internal class UpsertMemberDetailAndLocationCommandHandler : IRequestWithBaseResponseHandler<UpsertMemberDetailAndLocationCommand, UpsertMemberDetailAndLocationDTO>
     {
         private readonly MainDBContext _mainDBContext;
         private readonly ICurrentUserService _currentUserService;
@@ -108,27 +91,32 @@ namespace Dummy.Application.Members.Commands
             _mainDBContext = mainDBContext;
             _currentUserService = currentUserService;
         }
-        public async Task<BaseResponseDTO<MemberDTO>> Handle(UpsertMemberDetailAndLocationCommand request, CancellationToken cancellationToken)
+        public async Task<BaseResponseDTO<UpsertMemberDetailAndLocationDTO>> Handle(UpsertMemberDetailAndLocationCommand request, CancellationToken cancellationToken)
         {
-            var isAdmin = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}").Contains("admin");
+            var slug = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}");
+
+            var isAdmin = slug.Contains("admin");
             var existingMember = await _mainDBContext.Members.Include(x => x.Locations)
                                                              .FirstOrDefaultAsync(x => x.Slug == request.Slug
                                                                                   && x.Id == _currentUserService.Id, cancellationToken);
-
-            if (existingMember is null)
-            {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} {_localizer["failure.not_exists"]}");
-            }
 
             if (isAdmin)
             {
                 throw new RestfulAPIException(HttpStatusCode.BadRequest, _localizer["failure.invalid"]);
             }
 
-            existingMember.Slug = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}");
+            if (existingMember is null)
+            {
+                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} {_localizer["failure.not_exists"]}");
+            }
+
+            if (!StringHelper.IsSlugContainFullname(slug, existingMember.Slug))
+            {
+                existingMember.Slug = slug;
+            }
+
             existingMember.FirstName = request.FirstName;
             existingMember.LastName = request.LastName;
-            existingMember.Email = request.Email;
             existingMember.Avatar = request.Avatar;
             existingMember.Position = request.Position;
 
@@ -159,12 +147,11 @@ namespace Dummy.Application.Members.Commands
             }
 
             // Map to DTO
-            var memberDTO = new MemberDTO
+            var memberDTO = new UpsertMemberDetailAndLocationDTO
             {
                 Slug = existingMember.Slug,
                 FirstName = existingMember.FirstName,
                 LastName = existingMember.LastName,
-                Email = existingMember.Email,
                 Position = existingMember.Position,
                 Avatar = existingMember.Avatar,
                 Locations = existingMember.Locations.Select(x => new LocationDTO
@@ -178,7 +165,7 @@ namespace Dummy.Application.Members.Commands
             // Save to database
             await _mainDBContext.SaveChangesAsync(cancellationToken);
 
-            return new BaseResponseDTO<MemberDTO>
+            return new BaseResponseDTO<UpsertMemberDetailAndLocationDTO>
             {
                 Code = HttpStatusCode.OK,
                 Message = $"{_localizer["successful.update"]} {existingMember.Slug}",

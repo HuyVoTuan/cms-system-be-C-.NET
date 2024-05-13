@@ -6,9 +6,12 @@ using Dummy.Infrastructure.Commons.Base;
 using Dummy.Infrastructure.Helpers;
 using Dummy.Infrastructure.Services.Auth;
 using Dummy.Infrastructure.Services.EmailService;
+using Dummy.Infrastructure.Services.JobService;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Quartz;
 using System.Net;
 
 namespace Dummy.Application.Members.Commands
@@ -38,11 +41,17 @@ namespace Dummy.Application.Members.Commands
 
             RuleFor(x => x.FirstName).NotEmpty()
                                      .OverridePropertyName(_localizer["firstname"])
-                                     .WithMessage(_localizer["failure.cant_be_empty"]);
+                                     .WithMessage(_localizer["failure.cant_be_empty"])
+                                     .Must(StringHelper.IsValidString)
+                                     .OverridePropertyName(_localizer["firstname"])
+                                     .WithMessage(_localizer["failure.invalid"]);
 
             RuleFor(x => x.LastName).NotEmpty()
                                     .OverridePropertyName(_localizer["lastname"])
-                                    .WithMessage(_localizer["failure.cant_be_empty"]);
+                                    .WithMessage(_localizer["failure.cant_be_empty"])
+                                    .Must(StringHelper.IsValidString)
+                                    .OverridePropertyName(_localizer["lastname"])
+                                    .WithMessage(_localizer["failure.invalid"]);
 
             RuleFor(x => x.Email).EmailAddress()
                                  .OverridePropertyName(_localizer["email"])
@@ -82,39 +91,55 @@ namespace Dummy.Application.Members.Commands
 
             RuleFor(x => x.City).NotEmpty()
                                 .OverridePropertyName(_localizer["city"])
-                                .WithMessage(_localizer["failure.cant_be_empty"]);
+                                .WithMessage(_localizer["failure.cant_be_empty"])
+                                .Must(StringHelper.IsValidString)
+                                .OverridePropertyName(_localizer["city"])
+                                .WithMessage(_localizer["failure.invalid"]);
         }
     }
 
     internal class RegisterMemberCommandHandler : IRequestWithBaseResponseHandler<RegisterMemberCommand, AuthResponseDTO>
     {
+        private readonly IJobService _jobService;
         private readonly IAuthService _authService;
         private readonly MainDBContext _mainDBContext;
         private readonly IEmailNotificationService _emailNotificationService;
         private readonly IStringLocalizer<RegisterMemberCommandHandler> _localizer;
 
         public RegisterMemberCommandHandler(MainDBContext mainDBContext,
+                                            IJobService jobService,
                                             IAuthService authService,
                                             IEmailNotificationService emailNotificationService,
                                             IStringLocalizer<RegisterMemberCommandHandler> localizer)
+
         {
             _localizer = localizer;
+            _jobService = jobService;
             _authService = authService;
             _mainDBContext = mainDBContext;
             _emailNotificationService = emailNotificationService;
         }
         public async Task<BaseResponseDTO<AuthResponseDTO>> Handle(RegisterMemberCommand request, CancellationToken cancellationToken)
         {
-            var isAdmin = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}").Contains("admin");
+            var slug = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}");
+
+            var isAdmin = slug.Contains("admin");
+            var isExists = await _mainDBContext.Members.AsNoTracking()
+                                                       .AnyAsync(x => x.Slug == slug);
 
             if (isAdmin)
             {
                 throw new RestfulAPIException(HttpStatusCode.BadRequest, _localizer["failure.invalid"]);
             }
 
+            if (isExists)
+            {
+                throw new RestfulAPIException(HttpStatusCode.BadRequest, $"{slug} {_localizer["failure.already_exists"]}");
+            }
+
             var newMember = new Member
             {
-                Slug = StringHelper.GenerateSlug($"{request.FirstName} {request.LastName}"),
+                Slug = slug,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Password = _authService.HashPassword(request.Password),
@@ -138,8 +163,7 @@ namespace Dummy.Application.Members.Commands
             // Initial save to database
             await _mainDBContext.SaveChangesAsync(cancellationToken);
 
-
-
+            // Create Refresh Token for new member
             var refreshToken = _authService.GenerateRefreshToken(newMember);
             await _mainDBContext.RefreshTokens.AddAsync(refreshToken, cancellationToken);
 
@@ -153,9 +177,14 @@ namespace Dummy.Application.Members.Commands
                 RefreshToken = refreshToken.Token
             };
 
-            // TODO
-            // Implement email notification background job
-            await _emailNotificationService.SendEmailAsync("huy.vt00578@sinhvien.hoasen.edu.vn", new { Username = newMember.Slug }, "register");
+            // Implement email notification background job          
+            await _jobService.ExecuteNow<SendEmailWelcomeUser>(
+                $"welcomeUser-{newMember.Id}-{DateTime.UtcNow.ToString("yyyy-mm-dd HH:mm:ss")}",
+                new Dictionary<string, object> {
+                    { SendEmailWelcomeUser.RecieverEmail, "huy.votuan1410@gmail.com" },                 
+                },
+                cancellationToken
+            ); ;
 
             return new BaseResponseDTO<AuthResponseDTO>
             {
@@ -163,6 +192,44 @@ namespace Dummy.Application.Members.Commands
                 Message = $"{_localizer["successful.register"]} {newMember.Slug}",
                 Data = authResponseDTO
             };
+        }
+    }
+
+    internal class SendEmailWelcomeUser : IJob
+    {
+        public const string RecieverEmail = "recieverEmail";
+
+        private readonly ILogger<SendEmailWelcomeUser> _logger;
+        private readonly IStringLocalizer<SendEmailWelcomeUser> _localizer;
+        private readonly IEmailNotificationService _emailNotificationService;
+
+        public SendEmailWelcomeUser(ILogger<SendEmailWelcomeUser> logger,
+                                    IEmailNotificationService emailNotificationService,
+                                    IStringLocalizer<SendEmailWelcomeUser> localizer)
+        {
+            _logger = logger;
+            _localizer = localizer;
+            _emailNotificationService = emailNotificationService;
+        }
+        public async Task Execute(IJobExecutionContext context)
+        {
+            try
+            {
+                _logger.LogInformation($"Start to execute job named {context.JobDetail.Key.Name} group {context.JobDetail.Key.Group}");
+
+                var data = context.MergedJobDataMap;
+                var recieverEmailAddress = data.GetString(RecieverEmail);
+
+                await _emailNotificationService.SendEmailAsync(recieverEmailAddress, EmailEvent.Welcome);
+
+                _logger.LogInformation($"Finish execute job named {context.JobDetail.Key.Name} group {context.JobDetail.Key.Group}");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                throw;
+            }
         }
     }
 }

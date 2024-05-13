@@ -16,7 +16,6 @@ namespace Dummy.Infrastructure.Localization
             _memoryCache = memoryCache;
         }
 
-        public LocalizedString this[string name, params object[] arguments] => throw new NotImplementedException();
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => throw new NotImplementedException();
 
         // Access localizer through index _localizer["KeyExample"]
@@ -26,6 +25,15 @@ namespace Dummy.Infrastructure.Localization
             {
                 var value = GetString(name);
                 return new LocalizedString(name, value, string.IsNullOrEmpty(value));
+            }
+        }
+
+        public LocalizedString this[string name, params object[] arguments]
+        {
+            get
+            {
+                var actualValue = this[name];
+                return !actualValue.ResourceNotFound ? new LocalizedString(name, String.Format(actualValue.Value, arguments)) : actualValue;
             }
         }
         private string GetString(string key)

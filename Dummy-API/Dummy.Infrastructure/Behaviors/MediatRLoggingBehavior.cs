@@ -23,7 +23,7 @@ namespace Dummy.Infrastructure.Behaviors
 
             var requestNameWithGuid = $"{requestName} [{requestGuid}]";
 
-            _logger.LogInformation($"\n--[START] Handling {requestNameWithGuid}--\n");
+            _logger.LogInformation($"[START] Handling {requestNameWithGuid}");
 
             // Calculate execution time for the request
             TResponse response;
@@ -33,11 +33,11 @@ namespace Dummy.Infrastructure.Behaviors
             {
                 try
                 {
-                    _logger.LogInformation($"\n--[PROPS] {requestNameWithGuid} {JsonConvert.SerializeObject(request)}--\n");
+                    _logger.LogInformation($"[PROPS] {requestNameWithGuid} {JsonConvert.SerializeObject(request)}");
                 }
                 catch (NotSupportedException)
                 {
-                    _logger.LogError($"\n--[Serialization ERROR] {requestNameWithGuid} Could not serialize the request.--\n");
+                    _logger.LogError($"[Serialization ERROR] {requestNameWithGuid} Could not serialize the request");
                 }
 
                 response = await next();
@@ -46,10 +46,10 @@ namespace Dummy.Infrastructure.Behaviors
             {
                 stopwatch.Stop();
                 _logger.LogInformation(
-                    $"\n--[END] {requestNameWithGuid}; Execution time={stopwatch.ElapsedMilliseconds}ms\n--");
+                    $"[END] {requestNameWithGuid}; Execution time={stopwatch.ElapsedMilliseconds}ms");
             }
 
-            _logger.LogInformation($"\n--Handled {typeof(TResponse).Name}--\n");
+            _logger.LogInformation($"Handled {typeof(TResponse).Name}");
 
             return response;
         }

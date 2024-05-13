@@ -1,6 +1,4 @@
-﻿
-using DotLiquid;
-using Dummy.Infrastructure.Commons.Base;
+﻿using Dummy.Infrastructure.Commons.Base;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -20,6 +20,7 @@ builder.Services.AuthConfiguration(builder.Configuration)
                 .LocalizationConfiguration(builder.Configuration)
                 .FluentValidationConfiguration()
                 .EmailNotificationConfiguration(builder.Configuration)
+                .QuartzConfiguration(builder.Configuration)
                 .MediatRConfiguration();
 
 

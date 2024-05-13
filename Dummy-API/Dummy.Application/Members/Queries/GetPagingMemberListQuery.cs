@@ -75,7 +75,7 @@ namespace Dummy.Application.Members.Queries
             int.TryParse(request.PageLimit, out var pageLimit);
 
             // Perform pagination on item length with request page index and page limit
-            var pagedMembers = await query.Page(pageIndex, pageLimit)
+            var pagedMembersDTO = await query.Page(pageIndex, pageLimit)
                                           .ToListAsync(cancellationToken);
 
             // Calculate total pages
@@ -91,7 +91,7 @@ namespace Dummy.Application.Members.Queries
                     PageLimit = pageLimit,
                     ItemLength = totalMembers,
                     TotalPages = (int)totalPages,
-                    Data = pagedMembers
+                    Data = pagedMembersDTO
                 }
             };
         }

@@ -1,56 +1,74 @@
-﻿using Dummy.Infrastructure.Helpers;
+﻿using Dummy.Domain.Constants;
+using Dummy.Infrastructure.Helpers;
 using MailKit.Security;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 using MimeKit;
 
 namespace Dummy.Infrastructure.Services.EmailService
 {
     public class EmailNotificationService : IEmailNotificationService
     {
-        private readonly EmailSetting _emailSetting;
+        private readonly IStringLocalizer _localizer;
+        private readonly IConfiguration _configuration;
 
-        public EmailNotificationService(IOptions<EmailSetting> emailSetting)
+        public EmailNotificationService(IConfiguration configuration, IStringLocalizer localizer)
         {
-            _emailSetting = emailSetting.Value;
-        }
-        public async Task SendEmailAsync(string email, object data, string eventType)
-        {
-            await Send(new EmailContent()
-            {
-                To = email,
-                Data = data,
-                EventType = eventType
-            });
+            _localizer = localizer;
+            _configuration = configuration;
         }
 
-        private async Task Send(EmailContent emailContent)
+        public async Task SendEmailAsync(string emailAddress, string emailEvent, List<string> subjects, List<string> contents)
         {
+            var emailSetting = _configuration.GetSection(nameof(EmailSetting)).Get<EmailSetting>();
+
             var email = new MimeMessage();
-            email.Sender = new MailboxAddress(_emailSetting.DisplayName, _emailSetting.Mail);
-            email.From.Add(new MailboxAddress(_emailSetting.DisplayName, _emailSetting.Mail));
-            email.To.Add(MailboxAddress.Parse(emailContent.To));
-            email.Subject = EmailHelper.GetEmailSubject(emailContent.EventType);
+            email.Sender = new MailboxAddress(emailSetting.DisplayName, emailSetting.Mail);
+            email.From.Add(new MailboxAddress(emailSetting.DisplayName, emailSetting.Mail));
+            email.To.Add(MailboxAddress.Parse(emailAddress));
+
+            var emailData = GetEmailData(emailEvent, subjects, contents);
+            email.Subject = emailData.Subject;
 
             var builder = new BodyBuilder();
-            builder.HtmlBody = EmailHelper.GetEmailTemplate(emailContent.EventType, emailContent.Data);
-
+            builder.TextBody = emailData.Content;
             email.Body = builder.ToMessageBody();
 
             using (var smtp = new MailKit.Net.Smtp.SmtpClient())
             {
                 try
                 {
-                    smtp.Connect(_emailSetting.Host, _emailSetting.Port, SecureSocketOptions.StartTls);
-                    smtp.Authenticate(_emailSetting.Mail, _emailSetting.Password);
+                    smtp.Connect(emailSetting.Host, emailSetting.Port, SecureSocketOptions.StartTls);
+                    smtp.Authenticate(emailSetting.Mail, emailSetting.Password);
                     await smtp.SendAsync(email);
+                    smtp.Disconnect(true);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
+                    smtp.Disconnect(true);
                     return;
                 }
 
-                smtp.Disconnect(true);
             }
+        }
+
+        public async Task SendEmailAsync(string emailAddress, string emailEvent)
+        {
+            await SendEmailAsync(emailAddress, emailEvent, null, null);
+        }
+
+        private EmailData GetEmailData(String emailEvent, List<String> subjects, List<String> contents)
+        {
+            if (!TypeHelper.GetConstants(typeof(EmailEvent)).Contains(emailEvent))
+            {
+                throw new Exception($"{emailEvent} is invalid email event");
+            }
+
+            return new EmailData
+            {
+                Subject = subjects is not null ? _localizer[$"notification.{emailEvent}.subject", subjects] : _localizer[$"notification.{emailEvent}.subject"],
+                Content = contents is not null ? _localizer[$"notification.{emailEvent}.content", contents] : _localizer[$"notification.{emailEvent}.content"]
+            };
         }
     }
 }

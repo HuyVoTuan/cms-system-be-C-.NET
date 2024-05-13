@@ -72,8 +72,8 @@ namespace Dummy.API.Controllers
 
         [Authorize]
         [HttpPut("{slug}")]
-        public async Task<IActionResult> UpsertMemberDetailAndLocation([FromRoute] String slug, 
-                                                                       [FromBody] UpsertMemberDetailAndLocationCommandRequestDTO requestDTO, 
+        public async Task<IActionResult> UpsertMemberDetailAndLocation([FromRoute] String slug,
+                                                                       [FromBody] UpsertMemberDetailAndLocationCommandRequestDTO requestDTO,
                                                                        CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(slug))
@@ -86,7 +86,6 @@ namespace Dummy.API.Controllers
                 Slug = slug,
                 FirstName = requestDTO.FirstName,
                 LastName = requestDTO.LastName,
-                Email = requestDTO.Email,
                 Position = requestDTO.Position,
                 Avatar = requestDTO.Avatar,
                 Address = requestDTO.Address,
@@ -96,7 +95,7 @@ namespace Dummy.API.Controllers
 
             var upsertMemberDetailAndLocationResponse = await _mediator.Send(request, cancellationToken);
 
-            return new CustomActionResult<BaseResponseDTO<MemberDTO>>
+            return new CustomActionResult<BaseResponseDTO<UpsertMemberDetailAndLocationDTO>>
             {
                 StatusCode = upsertMemberDetailAndLocationResponse.Code,
                 Data = upsertMemberDetailAndLocationResponse
