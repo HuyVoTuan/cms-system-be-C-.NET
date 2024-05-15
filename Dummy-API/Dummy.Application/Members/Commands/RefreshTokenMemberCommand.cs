@@ -1,6 +1,7 @@
 ﻿using Dummy.Infrastructure;
 using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
+using Dummy.Infrastructure.Extensions;
 using Dummy.Infrastructure.Services;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
@@ -10,13 +11,13 @@ using System.Net;
 
 namespace Dummy.Application.Members.Commands
 {
-    public class RefreshTokenMemberCommandRequestDTO
+    public class RefreshTokenMemberCommand : IRequestWithBaseResponse<AuthResponseDTO>
     {
         public string RefreshToken { get; init; }
     }
 
     // Command validation
-    public class RefreshTokenMemberCommandRequestDTOValidator : AbstractValidator<RefreshTokenMemberCommandRequestDTO>
+    public class RefreshTokenMemberCommandRequestDTOValidator : AbstractValidator<RefreshTokenMemberCommand>
     {
         private readonly IStringLocalizer<RefreshTokenMemberCommandRequestDTOValidator> _localizer;
 
@@ -25,31 +26,22 @@ namespace Dummy.Application.Members.Commands
             _localizer = localizer;
 
             RuleFor(x => x.RefreshToken).NotEmpty()
-                                        .OverridePropertyName(_localizer["refresh_token"])
-                                        .WithMessage(_localizer["failure.cant_be_empty"]);
+                                        .OverridePropertyName(_localizer.Translate("refresh_token"))
+                                        .WithMessage(_localizer.Translate("failure.cant_be_empty"));
         }
     }
-    public class RefreshTokenMemberCommand : IRequestWithBaseResponse<AuthResponseDTO>
-    {
-        public String Slug { get; init; }
-        public string RefreshToken { get; init; }
-    }
-
-
 
     internal class RefreshTokenMemberCommandHandler : IRequestWithBaseResponseHandler<RefreshTokenMemberCommand, AuthResponseDTO>
     {
         private readonly IAuthService _authService;
-        private readonly MainDBContext _mainDBContext;
         private readonly ICacheService _cacheService;
+        private readonly MainDBContext _mainDBContext;
         private readonly ICurrentUserService _currentUserService;
         private readonly IStringLocalizer<RefreshTokenMemberCommandHandler> _localizer;
 
         public RefreshTokenMemberCommandHandler(MainDBContext mainDBContext,
-                                                IAuthService authService,
-                                                ICurrentUserService currentUserService,
-                                                ICacheService cacheService,
-                                                IStringLocalizer<RefreshTokenMemberCommandHandler> localizer)
+        IAuthService authService, ICurrentUserService currentUserService,
+        ICacheService cacheService, IStringLocalizer<RefreshTokenMemberCommandHandler> localizer)
         {
             _localizer = localizer;
             _authService = authService;
@@ -63,8 +55,7 @@ namespace Dummy.Application.Members.Commands
                                                       .Include(x => x.Member)
                                                       .FirstOrDefaultAsync(x => x.Token == request.RefreshToken
                                                                            && x.ExpiredDate > DateTime.UtcNow
-                                                                           && x.MemberId == _currentUserService.Id
-                                                                           && x.Member.Slug == request.Slug,
+                                                                           && x.MemberId == _currentUserService.Id,
                                                                            cancellationToken);
             // <summary>
             /* 
@@ -76,7 +67,6 @@ namespace Dummy.Application.Members.Commands
             {
                 return CachedRefreshTokenHandler(request.RefreshToken);
             }
-
 
             // <summary>
             /* 
@@ -108,7 +98,7 @@ namespace Dummy.Application.Members.Commands
             return new BaseResponseDTO<AuthResponseDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = _localizer["successful.refresh_token"],
+                Message = _localizer.Translate("successful.refresh_token", new List<String> { "user" }),
                 Data = authResponseDTO
             };
         }
@@ -119,13 +109,13 @@ namespace Dummy.Application.Members.Commands
 
             if (cachedRefreshToken is null)
             {
-                throw new RestfulAPIException(HttpStatusCode.Unauthorized, _localizer["failure.invalid"]);
+                throw new RestfulAPIException(HttpStatusCode.Unauthorized);
             }
 
             return new BaseResponseDTO<AuthResponseDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = _localizer["successful.retrieve_token"],
+                Message = _localizer.Translate("successful.retrieve_token", new List<String> { "user" }),
                 Data = cachedRefreshToken
             };
         }

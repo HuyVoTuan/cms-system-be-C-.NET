@@ -1,42 +1,49 @@
 ﻿{
+  "user": "user",
+  "users": "users",
   "slug": "slug",
   "firstname": "firstname",
   "lastname": "lastname",
   "email": "email",
   "position": "position",
-  "password": {
-    "password": "password",
-    "min_6_length": "must be more than 6 characters"
-  },
+  "password": "password",
   "address": "address",
   "district": "district",
   "city": "city",
   "refresh_token": "refresh token",
-  "paging": {
-    "page_index": "page index",
-    "page_limit": "page limit"
+  "page_index": "page index",
+  "page_limit": "page limit",
+
+  "validation_rules": {
+    "min_6_length": "must be more than 6 characters"
   },
+
   "failure": {
-    "cant_be_empty": "can not be empty",
-    "already_exists": "already exists",
-    "not_exists": "not exists",
-    "invalid": "invalid"
+    "cant_perform": "{0} can not perform the action",
+    "cant_be_empty": "{0} can not be empty",
+    "already_exists": "{0} already exists",
+    "not_exists": "{0} not exists",
+    "invalid": "invalid {0}",
+    "reset": "failed to reset {0}"
   },
+
   "successful": {
-    "update": "successfully updated",
-    "delete": "successfully deleted",
+    "update": "successfully updated {0}",
+    "delete": "successfully deleted {0}",
     "login": "successfully logged in",
-    "register": "successfully registered",
-    "revoke_token": "successfully revoke user token",
-    "refresh_token": "successfully refersh user token",
-    "retrieve_token": "successfully retrieve user refersh token",
-    "retrieve_users": "successfully retrieve users",
-    "retrieve_user": "successfully retrieve user"
+    "reset": "successfully reset {0}",
+    "register": "successfully registered {0}",
+    "revoke_token": "successfully revoke {0} token",
+    "refresh_token": "successfully refersh {0} token",
+    "retrieve_token": "successfully retrieve {0} refersh token",
+    "retrieve": "successfully retrieve {0}",
+    "email_sent": "an email has been sent to your account, please check your email"
   },
+
   "notification": {
-    "welcome_email": {
-      "subject": "DUMMY_API: Welcome to our community!",
-      "content": "We are thrilled to welcome you to our community! You have successfully registered an account with us."
+    "forgot_password": {
+      "subject": "DUMMY_API: Password Reset",
+      "content": "Your password has been reset to {0}. Please login into your account with this temporary password and perform change password."
     }
   }
 }

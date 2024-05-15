@@ -6,14 +6,14 @@ namespace Dummy.Infrastructure.Helpers
 {
     public static class StringHelper
     {
-        public static bool IsValidString(string value)
+        public static bool IsValidString(String value)
         {
             // Regular expression to match only letters and whitespace
             Regex regex = new Regex("^[a-zA-Z\\s]*$");
             return regex.IsMatch(value);
         }
 
-        public static string GenerateSlug(string memberName)
+        public static String GenerateSlug(String memberName)
         {
             var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var uniqueId = Nanoid.Generate(alphabet, size: 10);
@@ -33,7 +33,7 @@ namespace Dummy.Infrastructure.Helpers
             return result;
         }
 
-        public static bool IsSlugContainFullname(string requestSlug, string existingMemberSlug)
+        public static bool IsSlugContainFullname(String requestSlug, String existingMemberSlug)
         {
             var processedRequestSlug = requestSlug.Split("-");
             var processedExistingMemberSlug = existingMemberSlug.Split("-");
@@ -50,11 +50,11 @@ namespace Dummy.Infrastructure.Helpers
             return true;
         }
 
-        public static string GenerateRefreshToken()
+        public static String GenerateRefreshToken()
         {
             const int length = 32;
             char[] randomChars = new char[length];
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            const String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 
             Random random = new Random();
@@ -67,9 +67,9 @@ namespace Dummy.Infrastructure.Helpers
             }
 
             long timestamp = DateTime.UtcNow.Ticks;
-            string uniquePart = Convert.ToString(timestamp, 8);
+            var uniquePart = Convert.ToString(timestamp, 8);
 
-            string uniqueRandomString = new string(randomChars) + uniquePart;
+            var uniqueRandomString = new String(randomChars) + uniquePart;
 
             if (uniqueRandomString.Length > length)
             {
@@ -79,7 +79,27 @@ namespace Dummy.Infrastructure.Helpers
             return uniqueRandomString;
         }
 
-        public static string GenerateJobDetailId(String referenceId) => $"{referenceId}.jobDetail";
-        public static string GenerateJobTriggerId(String referenceId) => $"{referenceId}.jobTrigger";
+        public static String GenerateTemporaryPassword()
+        {
+            const int length = 6;
+            char[] randomChars = new char[length];
+            const String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+
+            Random random = new Random();
+
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    randomChars[i] = chars[random.Next(chars.Length)];
+                }
+            }
+
+            var temporaryPassword = new string(randomChars);
+            return temporaryPassword;
+        }
+
+        public static String GenerateJobDetailId(String referenceId) => $"{referenceId}.jobDetail";
+        public static String GenerateJobTriggerId(String referenceId) => $"{referenceId}.jobTrigger";
     }
 }

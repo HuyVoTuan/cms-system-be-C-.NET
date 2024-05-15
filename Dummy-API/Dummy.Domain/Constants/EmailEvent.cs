@@ -2,6 +2,6 @@
 {
     public static class EmailEvent
     {
-        public const string Welcome = "welcome_email";
+        public const string ForgotPassword = "forgot_password";
     }
 }

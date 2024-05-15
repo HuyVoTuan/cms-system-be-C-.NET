@@ -1,6 +1,7 @@
 ﻿using Dummy.Infrastructure;
 using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
+using Dummy.Infrastructure.Extensions;
 using Dummy.Infrastructure.Services.Auth;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -26,12 +27,12 @@ namespace Dummy.Application.Members.Commands
             _localizer = localizer;
 
             RuleFor(x => x.Email).NotEmpty()
-                                 .OverridePropertyName(_localizer["email"])
-                                 .WithMessage(_localizer["failure.cant_be_empty"]);
+                                 .OverridePropertyName(_localizer.Translate("email"))
+                                 .WithMessage(_localizer.Translate("failure.cant_be_empty"));
 
             RuleFor(x => x.Password).NotEmpty()
-                                    .OverridePropertyName(_localizer["password.password"])
-                                    .WithMessage(_localizer["failure.cant_be_empty"]);
+                                    .OverridePropertyName(_localizer.Translate("password"))
+                                    .WithMessage(_localizer.Translate("failure.cant_be_empty"));
         }
     }
 
@@ -49,17 +50,17 @@ namespace Dummy.Application.Members.Commands
         }
         public async Task<BaseResponseDTO<AuthResponseDTO>> Handle(LoginMemberCommand request, CancellationToken cancellationToken)
         {
-            var existedMember = await _mainDBContext.Members.AsNoTracking()
-                                                            .FirstOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
+            var existingMember = await _mainDBContext.Members.AsNoTracking()
+                                                             .FirstOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
 
 
-            if (existedMember is null || !_authService.VerifyPassword(request.Password, existedMember.Password))
+            if (existingMember is null || !_authService.VerifyPassword(request.Password, existingMember.Password))
             {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Email} {_localizer["failure.not_exists"]}!");
+                throw new RestfulAPIException(HttpStatusCode.NotFound, _localizer.Translate("failure.not_exists", new List<String> { "user" }));
             }
 
 
-            var newRefreshToken = _authService.GenerateRefreshToken(existedMember);
+            var newRefreshToken = _authService.GenerateRefreshToken(existingMember);
             await _mainDBContext.RefreshTokens.AddAsync(newRefreshToken, cancellationToken);
 
             // Save to database
@@ -68,14 +69,14 @@ namespace Dummy.Application.Members.Commands
             // Map to DTO
             var authResponseDTO = new AuthResponseDTO
             {
-                AccessToken = _authService.GenerateToken(existedMember),
+                AccessToken = _authService.GenerateToken(existingMember),
                 RefreshToken = newRefreshToken.Token
             };
 
             return new BaseResponseDTO<AuthResponseDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = _localizer["successful.login"],
+                Message = _localizer.Translate("successful.login"),
                 Data = authResponseDTO
             };
         }

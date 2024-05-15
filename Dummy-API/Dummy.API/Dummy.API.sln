@@ -5,11 +5,11 @@ VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dummy.API", "Dummy.API.csproj", "{CF4CDE63-8A21-4563-ADF3-9E26E7E545FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dummy.Application", "..\Dummy.Application\Dummy.Application.csproj", "{C735102A-2E1F-4F87-AECA-CF289AFA7F0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dummy.Application", "..\Dummy.Application\Dummy.Application.csproj", "{C735102A-2E1F-4F87-AECA-CF289AFA7F0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dummy.Infrastructure", "..\Dummy.Infrastructure\Dummy.Infrastructure.csproj", "{6340B774-5E02-4411-9E3A-54FD3316AD07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dummy.Infrastructure", "..\Dummy.Infrastructure\Dummy.Infrastructure.csproj", "{6340B774-5E02-4411-9E3A-54FD3316AD07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dummy.Domain", "..\Dummy.Domain\Dummy.Domain.csproj", "{B81E8481-386C-49CC-AF04-F41197E2DDC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dummy.Domain", "..\Dummy.Domain\Dummy.Domain.csproj", "{B81E8481-386C-49CC-AF04-F41197E2DDC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -18,13 +18,14 @@ namespace Dummy.Infrastructure.Services.EmailService
             _configuration = configuration;
         }
 
-        public async Task SendEmailAsync(string emailAddress, string emailEvent, List<string> subjects, List<string> contents)
+        public async Task SendEmailAsync(String emailAddress, String emailEvent, List<String> subjects, List<string> contents)
         {
             var emailSetting = _configuration.GetSection(nameof(EmailSetting)).Get<EmailSetting>();
 
             var email = new MimeMessage();
             email.Sender = new MailboxAddress(emailSetting.DisplayName, emailSetting.Mail);
             email.From.Add(new MailboxAddress(emailSetting.DisplayName, emailSetting.Mail));
+
             email.To.Add(MailboxAddress.Parse(emailAddress));
 
             var emailData = GetEmailData(emailEvent, subjects, contents);
@@ -32,6 +33,7 @@ namespace Dummy.Infrastructure.Services.EmailService
 
             var builder = new BodyBuilder();
             builder.TextBody = emailData.Content;
+
             email.Body = builder.ToMessageBody();
 
             using (var smtp = new MailKit.Net.Smtp.SmtpClient())

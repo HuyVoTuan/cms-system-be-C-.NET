@@ -1,4 +1,5 @@
 ﻿using Dummy.Infrastructure.Commons.Base;
+using Dummy.Infrastructure.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +14,8 @@ namespace Dummy.Infrastructure.Middlewares
     {
         private readonly ILogger<RestfulAPIExceptionHandler> _logger;
         private readonly IHostEnvironment _env;
-
         private const string ExceptionMessage = "An unhandled exception has occurred while executing the request.";
+
         public RestfulAPIExceptionHandler(ILogger<RestfulAPIExceptionHandler> logger, IHostEnvironment env)
         {
             _env = env;

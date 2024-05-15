@@ -11,6 +11,7 @@ namespace Dummy.Domain.Entities
         public String Email { get; set; }
         public String Position { get; set; }
         public String Password { get; set; }
+        public String Role { get; set; }
         public bool IsActive { get; set; }
         public ICollection<Location> Locations { get; set; }
         public ICollection<RefreshToken> RefreshToken { get; set; }

@@ -9,7 +9,10 @@ namespace Dummy.Infrastructure.Extensions
         public static IServiceCollection FluentValidationConfiguration(this IServiceCollection services)
         {
             var executingAssembly = AppDomain.CurrentDomain.Load("Dummy.Application");
+
+            // Base validation base on Fluent Validation Behavior Pipeline
             services.AddValidatorsFromAssembly(executingAssembly).AddFluentValidationAutoValidation();
+
             return services;
         }
     }

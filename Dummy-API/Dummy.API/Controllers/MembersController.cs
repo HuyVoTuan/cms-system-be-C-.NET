@@ -5,21 +5,18 @@ using Dummy.Infrastructure.Commons.Base;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 
 namespace Dummy.API.Controllers
 {
-    [Route("api/member")]
+    [Route("api/members")]
     [ApiController]
     public class MembersController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly IStringLocalizer _localizer;
 
-        public MembersController(IMediator mediator, IStringLocalizer localizer)
+        public MembersController(IMediator mediator)
         {
             _mediator = mediator;
-            _localizer = localizer;
         }
 
         [HttpGet]
@@ -45,7 +42,7 @@ namespace Dummy.API.Controllers
                 Data = getSingleMemberResponse,
             };
         }
-
+     
         [HttpPost("register")]
         public async Task<IActionResult> RegisterMember([FromBody] RegisterMemberCommand request, CancellationToken cancellationToken)
         {
@@ -71,34 +68,40 @@ namespace Dummy.API.Controllers
         }
 
         [Authorize]
-        [HttpPut("{slug}")]
-        public async Task<IActionResult> UpsertMemberDetailAndLocation([FromRoute] String slug,
-                                                                       [FromBody] UpsertMemberDetailAndLocationCommandRequestDTO requestDTO,
-                                                                       CancellationToken cancellationToken)
+        [HttpGet("/api/member/")]
+        public async Task<IActionResult> GetCurrentMember([FromQuery] GetCurrentMemberQuery request, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(slug))
-            {
-                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
-            }
+            var getCurrentMemberResponse = await _mediator.Send(request, cancellationToken);
 
-            var request = new UpsertMemberDetailAndLocationCommand
+            return new CustomActionResult<BaseResponseDTO<MemberDTO>>
             {
-                Slug = slug,
-                FirstName = requestDTO.FirstName,
-                LastName = requestDTO.LastName,
-                Position = requestDTO.Position,
-                Avatar = requestDTO.Avatar,
-                Address = requestDTO.Address,
-                City = requestDTO.City,
-                District = requestDTO.District
+                StatusCode = getCurrentMemberResponse.Code,
+                Data = getCurrentMemberResponse,
             };
+        }
 
-            var upsertMemberDetailAndLocationResponse = await _mediator.Send(request, cancellationToken);
+        [HttpPost("/api/member/forgot-password")]
+        public async Task<IActionResult> ResetCurrentMemberPassword([FromBody] ResetCurrentMemberPasswordCommand request, CancellationToken cancellationToken)
+        {
+            var resetCurrentMemberPasswordResponse = await _mediator.Send(request, cancellationToken);
 
-            return new CustomActionResult<BaseResponseDTO<UpsertMemberDetailAndLocationDTO>>
+            return new CustomActionResult<BaseResponseDTO>
             {
-                StatusCode = upsertMemberDetailAndLocationResponse.Code,
-                Data = upsertMemberDetailAndLocationResponse
+                StatusCode = resetCurrentMemberPasswordResponse.Code,
+                Data = resetCurrentMemberPasswordResponse,
+            };
+        }
+
+        [Authorize]
+        [HttpPut("/api/member")]
+        public async Task<IActionResult> UpsertCurrentMemberDetailAndLocation([FromBody] UpsertCurrentMemberDetailAndLocationCommand request, CancellationToken cancellationToken)
+        {
+            var upsertCurrentMemberDetailAndLocationResponse = await _mediator.Send(request, cancellationToken);
+
+            return new CustomActionResult<BaseResponseDTO<UpsertCurrentMemberDetailAndLocationDTO>>
+            {
+                StatusCode = upsertCurrentMemberDetailAndLocationResponse.Code,
+                Data = upsertCurrentMemberDetailAndLocationResponse
             };
         }
 
@@ -106,11 +109,6 @@ namespace Dummy.API.Controllers
         [HttpDelete("{slug}")]
         public async Task<IActionResult> DeleteMember([FromRoute] String slug, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(slug))
-            {
-                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
-            }
-
             var request = new DeleteMemberCommand(slug);
             var deleteMemberResponse = await _mediator.Send(request, cancellationToken);
 
@@ -121,39 +119,22 @@ namespace Dummy.API.Controllers
         }
 
         [Authorize]
-        [HttpPost("{slug}/refresh-token")]
-        public async Task<IActionResult> RefreshTokenMember([FromRoute] String slug, [FromBody] RefreshTokenMemberCommandRequestDTO requestDTO, CancellationToken cancellationToken)
+        [HttpPost("/api/member/refresh-token")]
+        public async Task<IActionResult> RefreshCurrentMemberToken([FromBody] RefreshTokenMemberCommand request, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(slug))
-            {
-                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
-            }
-
-            var request = new RefreshTokenMemberCommand
-            {
-                Slug = slug,
-                RefreshToken = requestDTO.RefreshToken,
-            };
-
-            var refreshTokenMemberResult = await _mediator.Send(request, cancellationToken);
+            var refreshCurrentMemberTokenResult = await _mediator.Send(request, cancellationToken);
 
             return new CustomActionResult<BaseResponseDTO<AuthResponseDTO>>
             {
-                StatusCode = refreshTokenMemberResult.Code,
-                Data = refreshTokenMemberResult,
+                StatusCode = refreshCurrentMemberTokenResult.Code,
+                Data = refreshCurrentMemberTokenResult,
             };
         }
 
         [Authorize]
-        [HttpDelete("{slug}/revoke-token")]
-        public async Task<IActionResult> RevokeMemberRefreshToken([FromRoute] String slug, CancellationToken cancellationToken)
+        [HttpDelete("/api/member/revoke-token")]
+        public async Task<IActionResult> RevokeCurrentMemberRefreshToken([FromBody] RevokeCurrentMemberRefreshTokenCommand request, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(slug))
-            {
-                return BadRequest($"{_localizer["slug"]} {_localizer["failure.cant_be_empty"]}");
-            }
-
-            var request = new RevokeMemberRefreshTokenCommand(slug);
             var revokeRefreshTokenResponse = await _mediator.Send(request, cancellationToken);
 
             return new CustomActionResult<BaseResponseDTO>
@@ -161,6 +142,5 @@ namespace Dummy.API.Controllers
                 StatusCode = revokeRefreshTokenResponse.Code
             };
         }
-
     }
 }

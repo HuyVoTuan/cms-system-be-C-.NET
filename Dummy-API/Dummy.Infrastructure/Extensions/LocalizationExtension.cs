@@ -26,5 +26,17 @@ namespace Dummy.Infrastructure.Extensions
             services.AddScoped<IStringLocalizer, JsonStringLocalizer>();
             return services;
         }
+
+        public static String Translate(this IStringLocalizer<dynamic> localizer, String key)
+        {
+            var result = localizer[key.ToLower()];
+            return !result.ResourceNotFound ? result.Value : key;
+        }
+
+        public static String Translate(this IStringLocalizer<dynamic> localizer, String key, List<String> args)
+        {
+            var result = localizer[key.ToLower(), args.ToArray()];
+            return !result.ResourceNotFound ? result.Value : key;
+        }
     }
 }

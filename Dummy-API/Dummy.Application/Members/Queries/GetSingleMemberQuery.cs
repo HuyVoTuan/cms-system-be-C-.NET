@@ -45,13 +45,13 @@ namespace Dummy.Application.Members.Queries
 
             if (memberDTO is null)
             {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} {_localizer["failure.not_exists"]}!");
+                throw new RestfulAPIException(HttpStatusCode.NotFound, _localizer["failure.not_exists", _localizer["user"]]);
             }
 
             return new BaseResponseDTO<MemberDTO>
             {
                 Code = HttpStatusCode.OK,
-                Message = $"{_localizer["successful.retrieve_user"]} {memberDTO.Slug} ",
+                Message = _localizer["successful.retrieve", _localizer["user"]],
                 Data = memberDTO
             };
         }

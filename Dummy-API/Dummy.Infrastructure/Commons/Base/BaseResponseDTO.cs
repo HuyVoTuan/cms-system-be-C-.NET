@@ -24,5 +24,16 @@ namespace Dummy.Infrastructure.Commons.Base
     {
         public HttpStatusCode Code { get; set; }
         public string Message { get; set; }
+
+        // Base constructor
+        public BaseResponseDTO()
+        {
+        }
+
+        // HttpStatusCode return only constructor
+        public BaseResponseDTO(HttpStatusCode code)
+        {
+            Code = code;
+        }
     }
 }

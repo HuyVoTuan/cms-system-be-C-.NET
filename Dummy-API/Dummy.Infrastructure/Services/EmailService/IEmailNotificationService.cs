@@ -2,7 +2,7 @@
 {
     public interface IEmailNotificationService
     {
-        Task SendEmailAsync(string emailAddress, string emailEvent, List<string> subjects, List<string> contents);
-        Task SendEmailAsync(string emailAddress, string emailEvent);
+        Task SendEmailAsync(String emailAddress, String emailEvent, List<String> subjects, List<String> contents);
+        Task SendEmailAsync(String emailAddress, String emailEvent);
     }
 }

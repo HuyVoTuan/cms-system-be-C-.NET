@@ -1,7 +1,8 @@
 ﻿using Dummy.Infrastructure;
 using Dummy.Infrastructure.Commons;
 using Dummy.Infrastructure.Commons.Base;
-using FluentValidation;
+using Dummy.Infrastructure.Extensions;
+using Dummy.Infrastructure.Services.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using System.Net;
@@ -10,47 +11,39 @@ namespace Dummy.Application.Members.Commands
 {
     public record DeleteMemberCommand(String Slug) : IRequestWithBaseResponse;
 
-    // Command validation
-    public class DeleteMemberCommandValidator : AbstractValidator<DeleteMemberCommand>
-    {
-        private readonly IStringLocalizer<DeleteMemberCommandValidator> _localizer;
-
-        public DeleteMemberCommandValidator(IStringLocalizer<DeleteMemberCommandValidator> localizer)
-        {
-            _localizer = localizer;
-
-            RuleFor(x => x.Slug).NotEmpty()
-                                .OverridePropertyName(_localizer["slug"])
-                                .WithMessage(_localizer["failure.cant_be_empty"]);
-        }
-    }
     internal class DeleteMemberCommandHandler : IRequestWithBaseResponseHandler<DeleteMemberCommand>
     {
         private readonly MainDBContext _mainDBContext;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IStringLocalizer<DeleteMemberCommandHandler> _localizer;
 
-        public DeleteMemberCommandHandler(MainDBContext mainDBContext, IStringLocalizer<DeleteMemberCommandHandler> localizer)
+        public DeleteMemberCommandHandler(MainDBContext mainDBContext,
+        IStringLocalizer<DeleteMemberCommandHandler> localizer, ICurrentUserService currentUserService)
         {
             _localizer = localizer;
             _mainDBContext = mainDBContext;
+            _currentUserService = currentUserService;
         }
         public async Task<BaseResponseDTO> Handle(DeleteMemberCommand request, CancellationToken cancellationToken)
         {
-            var existsMember = await _mainDBContext.Members.FirstOrDefaultAsync(x => x.Slug == request.Slug, cancellationToken);
+            var isAdmin = _currentUserService.IsAdmin;
 
-            if (existsMember is null)
+            if (!isAdmin)
             {
-                throw new RestfulAPIException(HttpStatusCode.NotFound, $"{request.Slug} {_localizer["failure.not_exists"]}!");
+                throw new RestfulAPIException(HttpStatusCode.Forbidden, _localizer.Translate("failure.cant_perform", new List<String> { "user" }));
             }
 
-            _mainDBContext.Members.Remove(existsMember);
+            var existingMember = await _mainDBContext.Members.FirstOrDefaultAsync(x => x.Slug == request.Slug, cancellationToken);
+
+            if (existingMember is null)
+            {
+                throw new RestfulAPIException(HttpStatusCode.NotFound, _localizer.Translate("failure.not_exists", new List<String> { "user" }));
+            }
+
+            _mainDBContext.Members.Remove(existingMember);
             await _mainDBContext.SaveChangesAsync(cancellationToken);
 
-            return new BaseResponseDTO
-            {
-                Code = HttpStatusCode.NoContent,
-                Message = $"${_localizer["successful.delete"]} {existsMember.Slug}"
-            };
+            return new BaseResponseDTO(HttpStatusCode.NoContent);
         }
     }
 }

@@ -1,42 +1,48 @@
 ﻿{
+  "user": "người dùng",
+  "users": "tất cả người dùng",
   "slug": "tên ký hiệu",
   "firstname": "tên riêng",
   "lastname": "tên họ",
   "email": "địa chỉ email",
   "position": "vị trí công việc",
-  "password": {
-    "password": "mật khẩu",
-    "min_6_length": "phải lớn hơn 6 ký tự"
-  },
+  "password": "mật khẩu",
   "address": "địa chỉ nhà",
   "district": "tên quận",
   "city": "tên thành phố",
   "refresh_token": "refresh token",
-  "paging": {
-    "page_index": "thứ tự trang",
-    "page_limit": "giới hạn số lượng phần tử cho 1 trang"
+  "page_index": "thứ tự trang",
+  "page_limit": "giới hạn số lượng phần tử cho 1 trang",
+
+  "validation_rules": {
+    "min_6_length": "phải lớn hơn 6 ký tự"
   },
+
   "failure": {
-    "cant_be_empty": "không được để trống",
-    "already_exists": "đã được đăng ký",
-    "not_exists": "không tồn tại",
-    "invalid": "không hợp lệ"
+    "cant_perform": "{0} không thể thực hiện tác vụ",
+    "cant_be_empty": "{0} không được để trống",
+    "already_exists": "{0} đã được đăng ký",
+    "not_exists": "{0} không tồn tại",
+    "invalid": "{0} không hợp lệ",
+    "reset": "đặt lại {0} thất bại"
   },
   "successful": {
-    "update": "cập nhật thành công",
-    "delete": "xóa thành công",
+    "update": "cập nhật {0} thành công",
+    "delete": "xóa {0} thành công",
     "login": "đăng nhập thành công",
-    "register": "đăng ký người dùng thành công",
-    "revoke_token": "thu hồi token của người dùng thành công",
-    "refresh_token": "làm mới token của người dùng thành công",
-    "retrieve_token": "truy xuất refersh token của người dùng thành công",
-    "retrieve_users": "truy xuất tất cả người dùng thành công",
-    "retrieve_user": "truy xuất người dùng thành công"
+    "reset": "đặt lại {0} thành công",
+    "register": "đăng ký {0} thành công",
+    "revoke_token": "thu hồi token {0} thành công",
+    "refresh_token": "làm mới token {0} thành công",
+    "retrieve_token": "truy xuất refersh token {0} thành công",
+    "retrieve": "truy xuất {0} thành công",
+    "email_sent": "hệ thống đã gửi một email đến tài khoản email của bạn, vui lòng kiểm tra email của bạn."
   },
+
   "notification": {
-    "welcome_email": {
-      "subject": "DUMMY_API: Chào mừng bạn đến với cộng đồng của chúng tôi!",
-      "content": "Chúng tôi rất vui mừng chào đón bạn đến với cộng đồng của chúng tôi! Bạn đã đăng ký tài khoản thành công với chúng tôi."
+    "forgot_password": {
+      "subject": "DUMMY_API: Thiết lập lại Mật khẩu",
+      "content": "Mật khẩu của bạn đã được thiết lập lại thành {0}. Vui lòng đăng nhập vào tài khoản của bạn bằng mật khẩu tạm thời này và thực hiện thay đổi mật khẩu."
     }
   }
 }

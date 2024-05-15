@@ -2,7 +2,7 @@
 
 namespace Dummy.Application.Members.DTOs
 {
-    public class UpsertMemberDetailAndLocationDTO
+    public class UpsertCurrentMemberDetailAndLocationDTO
     {
         public String Slug { get; set; }
         public String Avatar { get; set; }

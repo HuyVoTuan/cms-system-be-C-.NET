@@ -27,11 +27,11 @@ namespace Dummy.Application.Members.Queries
 
             RuleFor(x => x.PageIndex).Must(x => int.TryParse(x, out var result) && result > 0)
                                      .OverridePropertyName(_localizer["paging.page_index"])
-                                     .WithMessage(_localizer["failure.invalid"]);
+                                     .WithMessage(_localizer["failure.invalid", _localizer["paging.page_index"]]);
 
             RuleFor(x => x.PageLimit).Must(x => int.TryParse(x, out var result) && result > 0)
                                      .OverridePropertyName(_localizer["paging.page_limit"])
-                                     .WithMessage(_localizer["failure.invalid"]);
+                                     .WithMessage(_localizer["failure.invalid", _localizer["paging.page_limit"]]);
         }
     }
 
@@ -84,7 +84,7 @@ namespace Dummy.Application.Members.Queries
             return new BaseResponseDTO<PagingResponseDTO<MemberDTO>>
             {
                 Code = HttpStatusCode.OK,
-                Message = _localizer["successful.retrieve_users"],
+                Message = _localizer["successful.retrieve", _localizer["users"]],
                 Data = new PagingResponseDTO<MemberDTO>
                 {
                     PageIndex = pageIndex,
